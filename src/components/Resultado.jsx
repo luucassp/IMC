@@ -26,7 +26,7 @@ function Linha({ label, valor }) {
   );
 }
 
-export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano, onReiniciar }) {
+export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano, onTrocarObjetivo, onReiniciar }) {
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 20px 60px" }}>
       <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
@@ -95,9 +95,35 @@ export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano
         )}
 
         <Bloco titulo="SEU PERFIL">
-          <Linha label="Objetivo" valor={rotulo(OBJETIVOS, perfil.objetivo)} />
           <Linha label="Nível" valor={rotulo(NIVEIS, perfil.nivel)} />
           <Linha label="Tempo por treino" valor={`${perfil.tempoPorTreino} min`} />
+          <div style={{ paddingTop: 12 }}>
+            <div style={{ fontSize: 13, color: "#777", marginBottom: 10 }}>Objetivo (toque para trocar)</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {OBJETIVOS.map((o) => {
+                const ativo = perfil.objetivo === o.id;
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    onClick={() => onTrocarObjetivo(o.id)}
+                    style={{
+                      background: ativo ? `${accent}18` : "#141414",
+                      border: `1px solid ${ativo ? accent : "#222"}`,
+                      color: ativo ? accent : "#999",
+                      borderRadius: 999,
+                      padding: "6px 12px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {o.icon} {o.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </Bloco>
       </div>
 

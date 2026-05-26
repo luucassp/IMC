@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { DIAS, METRICAS } from "../data/planos.js";
-import { carregarHistorico, registrarTreino } from "../lib/storage.js";
+import {
+  carregarHistorico,
+  registrarTreino,
+  carregarRegistros,
+  registrarSerie,
+} from "../lib/storage.js";
+import { parseDescanso } from "../lib/tempo.js";
+import { frequenciaPorSemana, exerciciosComRegistro, progressaoCarga } from "../lib/estatisticas.js";
+import RestTimer from "./RestTimer.jsx";
+import MiniGrafico from "./MiniGrafico.jsx";
 
 const accent = "#c8ff00";
 
@@ -12,12 +21,54 @@ function formatarData(iso) {
   return new Date(iso).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
 }
 
+// Inputs de carga × reps de uma série, com feedback da última registrada.
+function LogCarga({ exercicio, cor, ultima, onRegistrar }) {
+  const [carga, setCarga] = useState("");
+  const [reps, setReps] = useState("");
+
+  const salvar = () => {
+    if (!carga || !reps) return;
+    onRegistrar({ exercicio, carga: Number(carga), reps: Number(reps) });
+    setCarga("");
+    setReps("");
+  };
+
+  const inputStyle = { width: 70, background: "#0f0f0f", border: "1px solid #2a2a2a", borderRadius: 6, padding: "8px 10px", fontSize: 14, color: "#f0ece4" };
+
+  return (
+    <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid #1a1a1a" }}>
+      <div style={{ fontFamily: "monospace", fontSize: 9, color: "#555", letterSpacing: 2, marginBottom: 8 }}>REGISTRAR SÉRIE</div>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <input type="number" placeholder="kg" value={carga} onChange={(e) => setCarga(e.target.value)} style={inputStyle} />
+        <span style={{ color: "#444" }}>×</span>
+        <input type="number" placeholder="reps" value={reps} onChange={(e) => setReps(e.target.value)} style={inputStyle} />
+        <button
+          type="button"
+          onClick={salvar}
+          disabled={!carga || !reps}
+          style={{ background: carga && reps ? cor : "#1a1a1a", color: carga && reps ? "#000" : "#444", border: "none", borderRadius: 6, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: carga && reps ? "pointer" : "not-allowed" }}
+        >
+          Salvar
+        </button>
+        {ultima && (
+          <span style={{ fontFamily: "monospace", fontSize: 11, color: "#666" }}>
+            última: {ultima.carga} kg × {ultima.reps}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
   const { days, schedule, semAcademia } = plano;
   const [activeDay, setActiveDay] = useState(days[0]?.id);
   const [expandedExercise, setExpandedExercise] = useState(null);
   const [tab, setTab] = useState("treino");
   const [historico, setHistorico] = useState(() => carregarHistorico());
+  const [registros, setRegistros] = useState(() => carregarRegistros());
+  const [descanso, setDescanso] = useState(null); // { segundos, chave }
+  const [exGrafico, setExGrafico] = useState("");
 
   const currentDay = days.find((d) => d.id === activeDay) ?? days[0];
 
@@ -29,6 +80,18 @@ export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
     if (feitoHoje) return;
     setHistorico(registrarTreino({ diaId: currentDay.id, diaLabel: currentDay.label, foco: currentDay.focus }));
   };
+
+  const iniciarDescanso = (rest) => setDescanso({ segundos: parseDescanso(rest), chave: Date.now() });
+
+  const salvarSerie = (entrada) => setRegistros(registrarSerie(entrada));
+
+  const ultimaSerieDe = (nome) => registros.find((r) => r.exercicio === nome);
+
+  // Dados do dashboard de evolução.
+  const freqSemana = frequenciaPorSemana(historico);
+  const exercicios = exerciciosComRegistro(registros);
+  const exSelecionado = exGrafico || exercicios[0] || "";
+  const dadosCarga = exSelecionado ? progressaoCarga(registros, exSelecionado) : [];
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#f0ece4" }}>
@@ -60,7 +123,7 @@ export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
 
           {/* Tabs */}
           <div style={{ display: "flex", borderBottom: "1px solid #1e1e1e" }}>
-            {[["treino", "Treino"], ["progressao", "Progressão"], ["semana", "Semana"], ["historico", "Histórico"]].map(([id, label]) => (
+            {[["treino", "Treino"], ["progressao", "Progressão"], ["semana", "Semana"], ["historico", "Evolução"]].map(([id, label]) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
@@ -84,7 +147,7 @@ export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
         </div>
       </div>
 
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px", paddingBottom: descanso ? 110 : 24 }}>
         {tab === "treino" && (
           <>
             {/* Seletor de dia */}
@@ -150,6 +213,21 @@ export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
                         <div style={{ background: `${currentDay.color}15`, border: `1px solid ${currentDay.color}30`, borderRadius: 6, padding: "8px 12px", fontFamily: "monospace", fontSize: 11, color: currentDay.color, letterSpacing: 0.5 }}>
                           ↑ PROGRESSÃO: {ex.progression}
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={() => iniciarDescanso(ex.rest)}
+                          style={{ marginTop: 10, background: "none", border: `1px solid ${currentDay.color}40`, color: currentDay.color, borderRadius: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                        >
+                          ⏱ Iniciar descanso ({ex.rest})
+                        </button>
+
+                        <LogCarga
+                          exercicio={ex.name}
+                          cor={currentDay.color}
+                          ultima={ultimaSerieDe(ex.name)}
+                          onRegistrar={salvarSerie}
+                        />
                       </div>
                     )}
                   </div>
@@ -278,8 +356,8 @@ export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
 
         {tab === "historico" && (
           <div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, letterSpacing: -0.5 }}>Histórico de Treinos</h2>
-            <p style={{ fontSize: 13, color: "#555", marginBottom: 24, fontFamily: "monospace" }}>Registre cada sessão concluída</p>
+            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, letterSpacing: -0.5 }}>Evolução</h2>
+            <p style={{ fontSize: 13, color: "#555", marginBottom: 24, fontFamily: "monospace" }}>Consistência, cargas e histórico</p>
 
             <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
               <div style={{ flex: 1, background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 8, padding: "16px 18px" }}>
@@ -292,6 +370,37 @@ export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
               </div>
             </div>
 
+            {/* Consistência semanal */}
+            <div style={{ background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 8, padding: "18px 20px", marginBottom: 16 }}>
+              <div style={{ fontFamily: "monospace", fontSize: 10, color: accent, letterSpacing: 3, marginBottom: 4 }}>CONSISTÊNCIA</div>
+              <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>Treinos por semana (últimas 6)</div>
+              <MiniGrafico dados={freqSemana} cor={accent} />
+            </div>
+
+            {/* Progressão de carga */}
+            <div style={{ background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 8, padding: "18px 20px", marginBottom: 24 }}>
+              <div style={{ fontFamily: "monospace", fontSize: 10, color: "#00D4FF", letterSpacing: 3, marginBottom: 10 }}>PROGRESSÃO DE CARGA</div>
+              {exercicios.length === 0 ? (
+                <div style={{ fontSize: 13, color: "#555", lineHeight: 1.6 }}>
+                  Registre séries (kg × reps) ao expandir um exercício na aba <strong style={{ color: "#888" }}>Treino</strong> para ver a evolução de carga aqui.
+                </div>
+              ) : (
+                <>
+                  <select
+                    value={exSelecionado}
+                    onChange={(e) => setExGrafico(e.target.value)}
+                    style={{ width: "100%", background: "#141414", border: "1px solid #2a2a2a", borderRadius: 6, padding: "10px 12px", fontSize: 13, color: "#f0ece4", marginBottom: 4 }}
+                  >
+                    {exercicios.map((nome) => (
+                      <option key={nome} value={nome}>{nome}</option>
+                    ))}
+                  </select>
+                  <MiniGrafico dados={dadosCarga} cor="#00D4FF" sufixo="kg" />
+                </>
+              )}
+            </div>
+
+            <div style={{ fontFamily: "monospace", fontSize: 10, color: "#555", letterSpacing: 3, marginBottom: 12 }}>SESSÕES CONCLUÍDAS</div>
             {historico.length === 0 ? (
               <div style={{ background: "#0f0f0f", border: "1px dashed #2a2a2a", borderRadius: 8, padding: "28px 20px", textAlign: "center", fontSize: 13, color: "#555", lineHeight: 1.6 }}>
                 Nenhum treino registrado ainda.<br />Conclua um treino na aba <strong style={{ color: "#888" }}>Treino</strong> para começar.
@@ -313,6 +422,10 @@ export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
           </div>
         )}
       </div>
+
+      {descanso && (
+        <RestTimer segundos={descanso.segundos} chave={descanso.chave} onFechar={() => setDescanso(null)} />
+      )}
     </div>
   );
 }

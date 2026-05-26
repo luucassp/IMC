@@ -4,6 +4,7 @@
 const PREFIXO = "imc-treino";
 const K_PERFIL = `${PREFIXO}:perfil:v1`;
 const K_HIST = `${PREFIXO}:historico:v1`;
+const K_REG = `${PREFIXO}:registros:v1`;
 
 function ler(chave, fallback) {
   try {
@@ -59,4 +60,20 @@ export function registrarTreino(entrada) {
 
 export function limparHistorico() {
   escrever(K_HIST, []);
+}
+
+// Registros de carga por série (carga × reps de um exercício).
+export function carregarRegistros() {
+  return ler(K_REG, []);
+}
+
+export function registrarSerie(entrada) {
+  const novo = {
+    id: globalThis.crypto?.randomUUID?.() ?? String(Date.now()),
+    data: new Date().toISOString(),
+    ...entrada,
+  };
+  const registros = [novo, ...carregarRegistros()];
+  escrever(K_REG, registros);
+  return registros;
 }

@@ -23,6 +23,12 @@ export default function App() {
     setView("resultado");
   };
 
+  const trocarObjetivo = (objetivo) => {
+    const atualizado = { ...perfil, objetivo };
+    salvarPerfil(atualizado);
+    setPerfil(atualizado);
+  };
+
   // Onboarding ainda não concluído.
   if (!perfil) return <Onboarding onConcluir={concluirOnboarding} />;
 
@@ -42,6 +48,7 @@ export default function App() {
       faixa={faixa}
       recomendacao={recomendacao}
       onVerPlano={() => setView("plano")}
+      onTrocarObjetivo={trocarObjetivo}
       onReiniciar={reiniciar}
     />
   );
