@@ -1,0 +1,241 @@
+import { useState } from "react";
+import { DIAS, METRICAS } from "../data/planos.js";
+
+const accent = "#c8ff00";
+
+export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
+  const { days, schedule, semAcademia } = plano;
+  const [activeDay, setActiveDay] = useState(days[0]?.id);
+  const [expandedExercise, setExpandedExercise] = useState(null);
+  const [tab, setTab] = useState("treino");
+
+  const currentDay = days.find((d) => d.id === activeDay) ?? days[0];
+
+  return (
+    <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#f0ece4" }}>
+      {/* Header */}
+      <div style={{ background: "#0f0f0f", borderBottom: "1px solid #1e1e1e", padding: "20px 20px 0" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+          <button
+            type="button"
+            onClick={onVoltar}
+            style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 13, padding: 0, marginBottom: 12 }}
+          >
+            ← Voltar ao resultado
+          </button>
+          <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
+            {recomendacao.enfase}
+          </span>
+          <h1 style={{ fontSize: 26, fontWeight: 700, margin: "4px 0 4px", letterSpacing: -1, lineHeight: 1.1 }}>
+            Seu Plano — <span style={{ color: accent }}>{plano.divisao}</span>
+          </h1>
+          <p style={{ fontSize: 13, color: "#666", margin: "0 0 16px", fontFamily: "monospace" }}>
+            {perfil.peso} kg · {perfil.altura} cm · {recomendacao.dias}x/semana · {recomendacao.volume}
+          </p>
+
+          {semAcademia && (
+            <div style={{ background: "#FF6B3510", border: "1px solid #FF6B3530", borderRadius: 8, padding: "10px 14px", marginBottom: 16, fontSize: 12, color: "#cda", lineHeight: 1.5 }}>
+              Sem academia/halteres? Use as variações sugeridas em cada exercício (peso corporal, elásticos) e progrida por repetições e cadência.
+            </div>
+          )}
+
+          {/* Tabs */}
+          <div style={{ display: "flex", borderBottom: "1px solid #1e1e1e" }}>
+            {[["treino", "Treino"], ["progressao", "Progressão"], ["semana", "Semana"]].map(([id, label]) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: "10px 16px",
+                  fontSize: 13,
+                  fontFamily: "monospace",
+                  cursor: "pointer",
+                  color: tab === id ? accent : "#555",
+                  borderBottom: tab === id ? `2px solid ${accent}` : "2px solid transparent",
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px" }}>
+        {tab === "treino" && (
+          <>
+            {/* Seletor de dia */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
+              {days.map((d) => (
+                <button
+                  key={d.id}
+                  onClick={() => { setActiveDay(d.id); setExpandedExercise(null); }}
+                  style={{
+                    background: activeDay === d.id ? d.color : "#141414",
+                    color: activeDay === d.id ? "#000" : "#666",
+                    border: activeDay === d.id ? "none" : "1px solid #222",
+                    borderRadius: 6,
+                    padding: "8px 14px",
+                    fontSize: 12,
+                    fontFamily: "monospace",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    letterSpacing: 1,
+                  }}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Cabeçalho do dia */}
+            <div style={{ background: "#111", border: `1px solid ${currentDay.color}22`, borderLeft: `3px solid ${currentDay.color}`, borderRadius: 8, padding: "16px 18px", marginBottom: 20 }}>
+              <div style={{ fontFamily: "monospace", fontSize: 10, color: currentDay.color, letterSpacing: 3, marginBottom: 6 }}>
+                {currentDay.tag}
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "#f0ece4", lineHeight: 1.4 }}>{currentDay.focus}</div>
+            </div>
+
+            {/* Exercícios */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {currentDay.exercises.map((ex, i) => {
+                const isOpen = expandedExercise === i;
+                return (
+                  <div key={i} style={{ background: isOpen ? "#141414" : "#0f0f0f", border: `1px solid ${isOpen ? "#2a2a2a" : "#1a1a1a"}`, borderRadius: 8, overflow: "hidden" }}>
+                    <button
+                      onClick={() => setExpandedExercise(isOpen ? null : i)}
+                      style={{ width: "100%", background: "none", border: "none", padding: "14px 16px", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 12 }}
+                    >
+                      <span style={{ fontFamily: "monospace", fontSize: 9, letterSpacing: 2, color: ex.category === "PRINCIPAL" ? currentDay.color : "#555", minWidth: 70, textTransform: "uppercase" }}>
+                        {ex.category}
+                      </span>
+                      <span style={{ fontSize: 14, color: "#e8e4dc", fontWeight: 500, flex: 1 }}>{ex.name}</span>
+                      <span style={{ fontFamily: "monospace", fontSize: 12, color: "#444" }}>{isOpen ? "▲" : "▼"}</span>
+                    </button>
+
+                    {isOpen && (
+                      <div style={{ padding: "0 16px 16px", borderTop: "1px solid #1a1a1a" }}>
+                        <div style={{ display: "flex", gap: 16, marginTop: 12, marginBottom: 12, flexWrap: "wrap" }}>
+                          {[["SÉRIES", ex.sets], ["REPS", ex.reps], ["DESCANSO", ex.rest]].map(([label, val]) => (
+                            <div key={label} style={{ background: "#1a1a1a", borderRadius: 6, padding: "8px 12px" }}>
+                              <div style={{ fontFamily: "monospace", fontSize: 9, color: "#555", letterSpacing: 2 }}>{label}</div>
+                              <div style={{ fontFamily: "monospace", fontSize: 14, color: "#f0ece4", fontWeight: 700, marginTop: 2 }}>{val}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ fontSize: 13, color: "#888", lineHeight: 1.6, marginBottom: 10 }}>{ex.note}</div>
+                        <div style={{ background: `${currentDay.color}15`, border: `1px solid ${currentDay.color}30`, borderRadius: 6, padding: "8px 12px", fontFamily: "monospace", fontSize: 11, color: currentDay.color, letterSpacing: 0.5 }}>
+                          ↑ PROGRESSÃO: {ex.progression}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {tab === "progressao" && (
+          <div>
+            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, letterSpacing: -0.5 }}>Como Medir a Evolução</h2>
+            <p style={{ fontSize: 13, color: "#555", marginBottom: 24, fontFamily: "monospace" }}>Métricas semanais e mensais</p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
+              {METRICAS.map((m, i) => (
+                <div key={i} style={{ background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 8, padding: "16px 18px", display: "flex", gap: 14, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 22 }}>{m.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{m.title}</div>
+                    <div style={{ fontSize: 13, color: "#666", lineHeight: 1.6 }}>{m.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ background: "#0f0f0f", border: "1px solid #222", borderRadius: 8, padding: "20px", marginBottom: 20 }}>
+              <div style={{ fontFamily: "monospace", fontSize: 10, color: accent, letterSpacing: 3, marginBottom: 12 }}>MODELO DE DUPLA PROGRESSÃO</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {[
+                  ["SEMANA 1", "Carga base estabelecida. Todas as séries com ~2 reps de reserva (RIR 2).", "#333"],
+                  ["SEMANA 2", "Se atingiu todas as reps → +carga nos compostos.", "#1a2a1a"],
+                  ["SEMANA 3", "Adicione 1 rep por série nos acessórios até o teto, depois aumente a carga.", "#1a1a2a"],
+                  ["SEMANA 4", "Deload: reduza o volume em 40%, mantenha a carga. Recuperação ativa.", "#2a1a1a"],
+                ].map(([week, desc, bg]) => (
+                  <div key={week} style={{ background: bg, borderRadius: 6, padding: "10px 14px", display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, minWidth: 72 }}>{week}</span>
+                    <span style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>{desc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {Number(perfil.altura) >= 190 && (
+              <div style={{ background: "#FF6B3510", border: "1px solid #FF6B3530", borderRadius: 8, padding: "16px 18px" }}>
+                <div style={{ fontFamily: "monospace", fontSize: 10, color: "#FF6B35", letterSpacing: 3, marginBottom: 8 }}>
+                  ATENÇÃO — ALAVANCAS LONGAS ({(Number(perfil.altura) / 100).toFixed(2)} m)
+                </div>
+                <ul style={{ margin: 0, padding: "0 0 0 16px", fontSize: 13, color: "#888", lineHeight: 1.8 }}>
+                  <li>Sua amplitude de movimento é maior que a média — use isso a favor (ROM = estímulo mecânico).</li>
+                  <li>Progrida mais devagar em agachamento, terra e barra fixa.</li>
+                  <li>Verifique a técnica no espelho ou câmera antes de aumentar carga.</li>
+                  <li>Respeite o descanso mais longo nos compostos.</li>
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === "semana" && (
+          <div>
+            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, letterSpacing: -0.5 }}>Estrutura Semanal</h2>
+            <p style={{ fontSize: 13, color: "#555", marginBottom: 24, fontFamily: "monospace" }}>{plano.divisao} · {recomendacao.dias} dias</p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 28 }}>
+              {schedule.map((day, i) => {
+                const dayData = day.session ? DIAS[day.session] : null;
+                return (
+                  <div key={i} style={{ background: day.rest ? "#0a0a0a" : "#0f0f0f", border: `1px solid ${day.rest ? "#141414" : "#1a1a1a"}`, borderRadius: 8, padding: "14px 18px", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 700, color: day.rest ? "#333" : "#666", minWidth: 36 }}>{day.day}</div>
+                    {day.rest ? (
+                      <div style={{ fontSize: 13, color: "#333", fontStyle: "italic" }}>Descanso / Recuperação Ativa</div>
+                    ) : (
+                      <>
+                        <div style={{ background: dayData.color, color: "#000", borderRadius: 4, padding: "2px 8px", fontFamily: "monospace", fontSize: 11, fontWeight: 700 }}>{dayData.label}</div>
+                        <div>
+                          <div style={{ fontSize: 13, color: "#e8e4dc", fontWeight: 500 }}>{dayData.focus.split(" — ")[0]}</div>
+                          <div style={{ fontSize: 11, color: "#555", fontFamily: "monospace", marginTop: 2 }}>{dayData.focus.split(" — ")[1]}</div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 8, padding: "20px" }}>
+              <div style={{ fontFamily: "monospace", fontSize: 10, color: accent, letterSpacing: 3, marginBottom: 14 }}>PRINCÍPIOS DO BLOCO</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {[
+                  ["Sobrecarga Progressiva", "A base do treino. Sem progressão registrada, não há estímulo de crescimento."],
+                  ["Frequência por Grupo", "Treine cada músculo 2× por semana sempre que a divisão permitir."],
+                  ["Técnica sobre Ego", "Carga técnica bate carga máxima — especialmente nos compostos."],
+                  ["Deload a cada 4 sem.", "Evita overreaching e potencializa a supercompensação no ciclo seguinte."],
+                ].map(([title, desc]) => (
+                  <div key={title} style={{ borderLeft: "2px solid #222", paddingLeft: 12 }}>
+                    <div style={{ fontSize: 13, color: "#e8e4dc", fontWeight: 500, marginBottom: 2 }}>{title}</div>
+                    <div style={{ fontSize: 12, color: "#555", lineHeight: 1.5 }}>{desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

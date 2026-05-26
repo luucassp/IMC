@@ -1,5 +1,3 @@
-import { calcularIMC, classificarIMC } from "../lib/imc.js";
-import { recomendarTreino } from "../lib/recomendacao.js";
 import { OBJETIVOS, NIVEIS } from "../data/onboarding.js";
 
 const accent = "#c8ff00";
@@ -28,11 +26,7 @@ function Linha({ label, valor }) {
   );
 }
 
-export default function Resultado({ perfil, onReiniciar }) {
-  const imc = calcularIMC(perfil.peso, perfil.altura);
-  const faixa = classificarIMC(imc);
-  const plano = recomendarTreino(perfil, imc, faixa);
-
+export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano, onReiniciar }) {
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 20px 60px" }}>
       <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
@@ -68,19 +62,19 @@ export default function Resultado({ perfil, onReiniciar }) {
       {/* Recomendação */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
         <Bloco titulo="TREINO RECOMENDADO">
-          <Linha label="Divisão" valor={plano.divisao} />
-          <Linha label="Frequência" valor={`${plano.dias}x por semana`} />
-          <Linha label="Faixa de repetições" valor={plano.reps} />
-          <Linha label="Descanso" valor={plano.descanso} />
-          <Linha label="Cardio" valor={plano.cardio} />
-          <Linha label="Volume alvo" valor={plano.volume} />
+          <Linha label="Divisão" valor={recomendacao.divisao} />
+          <Linha label="Frequência" valor={`${recomendacao.dias}x por semana`} />
+          <Linha label="Faixa de repetições" valor={recomendacao.reps} />
+          <Linha label="Descanso" valor={recomendacao.descanso} />
+          <Linha label="Cardio" valor={recomendacao.cardio} />
+          <Linha label="Volume alvo" valor={recomendacao.volume} />
           <div style={{ fontSize: 13, color: "#999", lineHeight: 1.6, marginTop: 12 }}>
             <strong style={{ color: "#c8ccc0" }}>Ênfase: </strong>
-            {plano.enfase}
+            {recomendacao.enfase}
           </div>
         </Bloco>
 
-        {plano.alertas.length > 0 && (
+        {recomendacao.alertas.length > 0 && (
           <div
             style={{
               background: "#FF6B3510",
@@ -93,7 +87,7 @@ export default function Resultado({ perfil, onReiniciar }) {
               ATENÇÃO
             </div>
             <ul style={{ margin: 0, padding: "0 0 0 16px", fontSize: 13, color: "#999", lineHeight: 1.7 }}>
-              {plano.alertas.map((a, i) => (
+              {recomendacao.alertas.map((a, i) => (
                 <li key={i}>{a}</li>
               ))}
             </ul>
@@ -107,6 +101,25 @@ export default function Resultado({ perfil, onReiniciar }) {
         </Bloco>
       </div>
 
+      <button
+        type="button"
+        onClick={onVerPlano}
+        style={{
+          width: "100%",
+          background: accent,
+          color: "#000",
+          border: "none",
+          borderRadius: 8,
+          padding: "16px 20px",
+          fontSize: 15,
+          fontWeight: 700,
+          cursor: "pointer",
+          letterSpacing: 0.5,
+          marginBottom: 12,
+        }}
+      >
+        Ver plano completo →
+      </button>
       <button
         type="button"
         onClick={onReiniciar}
