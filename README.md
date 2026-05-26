@@ -69,6 +69,7 @@ npm run build && npm start    # API em http://localhost:3333
 | POST   | `/historico`     | JWT  | Registra uma sessão concluída      |
 | GET    | `/registros`     | JWT  | Séries registradas (carga × reps)  |
 | POST   | `/registros`     | JWT  | Registra uma série                 |
+| GET    | `/dashboard`     | JWT  | Agregados: frequência e progressão |
 
 ## Estrutura
 
@@ -91,7 +92,6 @@ src/
     plano.js         # monta o plano e a semana a partir da recomendação
     storage.js       # token de sessão no localStorage
     tempo.js         # parsing/format de descanso
-    estatisticas.js  # agregações do dashboard (frequência, progressão)
   App.jsx
   main.jsx
 legacy/              # calculadora de IMC original (HTML/CSS/JS puro)
@@ -103,7 +103,7 @@ server/
   src/
     auth/            # registro, login, JWT (estratégia, guard, decorator)
     perfil/          # CRUD do perfil físico (protegido por JWT)
-    treino/          # histórico de sessões + registros de carga (JWT)
+    treino/          # histórico, registros de carga e dashboard (JWT)
     prisma/          # PrismaService/Module
     main.ts          # bootstrap (CORS + ValidationPipe)
     app.module.ts

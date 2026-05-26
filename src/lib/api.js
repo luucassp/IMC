@@ -31,4 +31,5 @@ export const api = {
   addHistorico: (token, entrada) => request("/historico", { method: "POST", token, body: entrada }),
   getRegistros: (token) => request("/registros", { token }),
   addRegistro: (token, entrada) => request("/registros", { method: "POST", token, body: entrada }),
+  getDashboard: (token) => request("/dashboard", { token }),
 };

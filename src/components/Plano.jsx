@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { DIAS, METRICAS } from "../data/planos.js";
 import { api } from "../lib/api.js";
 import { parseDescanso } from "../lib/tempo.js";
-import { frequenciaPorSemana, exerciciosComRegistro, progressaoCarga } from "../lib/estatisticas.js";
 import RestTimer from "./RestTimer.jsx";
 import MiniGrafico from "./MiniGrafico.jsx";
 
@@ -62,17 +61,19 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
   const [tab, setTab] = useState("treino");
   const [historico, setHistorico] = useState([]);
   const [registros, setRegistros] = useState([]);
+  const [dashboard, setDashboard] = useState(null);
   const [descanso, setDescanso] = useState(null); // { segundos, chave }
   const [exGrafico, setExGrafico] = useState("");
 
-  // Carrega histórico e registros do usuário ao montar.
+  // Carrega histórico, registros e dashboard (agregado no servidor) ao montar.
   useEffect(() => {
     let ativo = true;
-    Promise.all([api.getHistorico(token), api.getRegistros(token)])
-      .then(([h, r]) => {
+    Promise.all([api.getHistorico(token), api.getRegistros(token), api.getDashboard(token)])
+      .then(([h, r, d]) => {
         if (!ativo) return;
         setHistorico(h);
         setRegistros(r);
+        setDashboard(d);
       })
       .catch(() => {});
     return () => {
@@ -80,16 +81,18 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
     };
   }, [token]);
 
+  const recarregarDashboard = () => api.getDashboard(token).then(setDashboard).catch(() => {});
+
   const currentDay = days.find((d) => d.id === activeDay) ?? days[0];
 
   const hoje = new Date().toISOString();
   const feitoHoje = historico.some((h) => h.diaId === currentDay.id && mesmoDia(h.data, hoje));
-  const ultimos7 = historico.filter((h) => Date.now() - new Date(h.data).getTime() <= 7 * 864e5).length;
 
   const concluirTreino = async () => {
     if (feitoHoje) return;
     const novo = await api.addHistorico(token, { diaId: currentDay.id, diaLabel: currentDay.label, foco: currentDay.focus });
     setHistorico((prev) => [novo, ...prev]);
+    recarregarDashboard();
   };
 
   const iniciarDescanso = (rest) => setDescanso({ segundos: parseDescanso(rest), chave: Date.now() });
@@ -97,15 +100,18 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
   const salvarSerie = async (entrada) => {
     const novo = await api.addRegistro(token, entrada);
     setRegistros((prev) => [novo, ...prev]);
+    recarregarDashboard();
   };
 
   const ultimaSerieDe = (nome) => registros.find((r) => r.exercicio === nome);
 
-  // Dados do dashboard de evolução.
-  const freqSemana = frequenciaPorSemana(historico);
-  const exercicios = exerciciosComRegistro(registros);
+  // Agregados do dashboard (calculados no servidor).
+  const total = dashboard?.total ?? 0;
+  const ultimos7 = dashboard?.ultimos7 ?? 0;
+  const freqSemana = dashboard?.frequencia ?? [];
+  const exercicios = dashboard ? Object.keys(dashboard.progressao) : [];
   const exSelecionado = exGrafico || exercicios[0] || "";
-  const dadosCarga = exSelecionado ? progressaoCarga(registros, exSelecionado) : [];
+  const dadosCarga = dashboard?.progressao?.[exSelecionado] ?? [];
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#f0ece4" }}>
@@ -379,7 +385,7 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
                 <div style={{ fontSize: 12, color: "#666", fontFamily: "monospace", marginTop: 2 }}>nos últimos 7 dias</div>
               </div>
               <div style={{ flex: 1, background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 8, padding: "16px 18px" }}>
-                <div style={{ fontSize: 28, fontWeight: 700, color: "#e8e4dc" }}>{historico.length}</div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: "#e8e4dc" }}>{total}</div>
                 <div style={{ fontSize: 12, color: "#666", fontFamily: "monospace", marginTop: 2 }}>no total</div>
               </div>
             </div>
