@@ -24,6 +24,7 @@ async function request(path, { method = "GET", token, body } = {}) {
 export const api = {
   register: (dados) => request("/auth/register", { method: "POST", body: dados }),
   login: (dados) => request("/auth/login", { method: "POST", body: dados }),
+  loginGoogle: (idToken) => request("/auth/google", { method: "POST", body: { idToken } }),
   me: (token) => request("/auth/me", { token }),
   getPerfil: (token) => request("/perfil", { token }),
   putPerfil: (token, perfil) => request("/perfil", { method: "PUT", token, body: perfil }),

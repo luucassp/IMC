@@ -25,7 +25,7 @@ original (preservada em [`legacy/`](./legacy)).
 - **Front-end**: React 18 + Vite (raiz do repositório)
 - **Back-end**: NestJS + Prisma + SQLite (em [`server/`](./server)); SQLite no dev,
   pronto para PostgreSQL em produção (basta trocar `provider` e `DATABASE_URL`)
-- **Auth**: JWT (e-mail/senha, senha com hash bcrypt)
+- **Auth**: JWT (e-mail/senha com hash bcrypt) + login com Google (opcional)
 
 > Login, perfil, histórico e registros de carga passam pela API, por usuário.
 > No front, o `localStorage` guarda apenas o token de sessão.
@@ -62,6 +62,7 @@ npm run build && npm start    # API em http://localhost:3333
 | ------ | ---------------- | ---- | ---------------------------------- |
 | POST   | `/auth/register` | —    | Cria conta → `{ token, user }`     |
 | POST   | `/auth/login`    | —    | Autentica → `{ token, user }`      |
+| POST   | `/auth/google`   | —    | Login com ID token do Google       |
 | GET    | `/auth/me`       | JWT  | Dados do usuário autenticado       |
 | GET    | `/perfil`        | JWT  | Perfil físico (ou `null`)          |
 | PUT    | `/perfil`        | JWT  | Cria/atualiza o perfil físico      |
@@ -109,8 +110,21 @@ server/
     app.module.ts
 ```
 
+### Login com Google (opcional)
+
+1. Crie um **OAuth Client ID** (tipo "Web application") em
+   [Google Cloud Console](https://console.cloud.google.com/apis/credentials),
+   autorizando a origem `http://localhost:5173`.
+2. Back: defina `GOOGLE_CLIENT_ID` no `server/.env`.
+3. Front: crie um `.env.local` na raiz com `VITE_GOOGLE_CLIENT_ID=` (o **mesmo** id).
+
+Sem essas variáveis o app funciona normalmente por e-mail/senha; o botão do
+Google só aparece quando `VITE_GOOGLE_CLIENT_ID` está definido.
+
 ## Próximos passos
 
-- OAuth (Google/Apple) e troca de SQLite por PostgreSQL gerenciado.
+- **Login com Apple**: requer conta paga no Apple Developer, chave `.p8` e
+  geração do *client secret* (JWT) no servidor — pendente desses pré-requisitos.
+- Trocar SQLite por PostgreSQL gerenciado (Supabase/Railway).
 - Substituir as regras fixas por personalização adaptativa.
 - Ajuste por fadiga e reorganização automática da semana ao faltar treino.

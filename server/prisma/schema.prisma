@@ -12,8 +12,10 @@ datasource db {
 model User {
   id        String      @id @default(uuid())
   email     String      @unique
-  senhaHash String
+  senhaHash String?     // nulo em contas que só usam login social
   nome      String
+  googleId  String?     @unique
+  avatarUrl String?
   perfil    Perfil?
   historico Historico[]
   registros Registro[]

@@ -1,7 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { api } from "../lib/api.js";
 
 const accent = "#c8ff00";
+const GOOGLE_CLIENT_ID = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
+
+// Carrega o script do Google Identity Services uma única vez.
+function carregarGIS() {
+  return new Promise((resolve, reject) => {
+    if (window.google?.accounts?.id) return resolve();
+    const existente = document.getElementById("gis-script");
+    if (existente) {
+      existente.addEventListener("load", () => resolve());
+      return;
+    }
+    const s = document.createElement("script");
+    s.id = "gis-script";
+    s.src = "https://accounts.google.com/gsi/client";
+    s.async = true;
+    s.defer = true;
+    s.onload = () => resolve();
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
 
 const inputStyle = {
   width: "100%",
@@ -21,8 +42,42 @@ export default function Auth({ onAutenticado }) {
   const [nome, setNome] = useState("");
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const googleBtnRef = useRef(null);
 
   const ehRegistro = modo === "registro";
+
+  // Botão "Continuar com o Google" (só se VITE_GOOGLE_CLIENT_ID estiver definido).
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+    let cancelado = false;
+    carregarGIS()
+      .then(() => {
+        if (cancelado || !window.google) return;
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: async (resp) => {
+            try {
+              const sessao = await api.loginGoogle(resp.credential);
+              onAutenticado(sessao);
+            } catch (err) {
+              setErro(err.message || "Falha no login com Google.");
+            }
+          },
+        });
+        if (googleBtnRef.current) {
+          window.google.accounts.id.renderButton(googleBtnRef.current, {
+            theme: "filled_black",
+            size: "large",
+            text: "continue_with",
+            width: 320,
+          });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelado = true;
+    };
+  }, [onAutenticado]);
 
   const enviar = async (e) => {
     e.preventDefault();
@@ -107,6 +162,17 @@ export default function Auth({ onAutenticado }) {
           {enviando ? "..." : ehRegistro ? "Criar conta" : "Entrar"}
         </button>
       </form>
+
+      {GOOGLE_CLIENT_ID && (
+        <>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0" }}>
+            <div style={{ flex: 1, height: 1, background: "#222" }} />
+            <span style={{ fontFamily: "monospace", fontSize: 11, color: "#555" }}>ou</span>
+            <div style={{ flex: 1, height: 1, background: "#222" }} />
+          </div>
+          <div ref={googleBtnRef} style={{ display: "flex", justifyContent: "center" }} />
+        </>
+      )}
 
       <button
         type="button"
