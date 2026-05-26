@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { DIAS, METRICAS } from "../data/planos.js";
 import { api } from "../lib/api.js";
 import { parseDescanso } from "../lib/tempo.js";
+import { NIVEIS_FADIGA, ajustarExercicios } from "../lib/fadiga.js";
+import { planejarSemana } from "../lib/semana.js";
 import RestTimer from "./RestTimer.jsx";
 import MiniGrafico from "./MiniGrafico.jsx";
 
@@ -14,6 +16,14 @@ function mesmoDia(isoA, isoB) {
 function formatarData(iso) {
   return new Date(iso).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
 }
+
+const STATUS_SEMANA = {
+  feito: { label: "✓ feito", cor: "#00E5A0" },
+  hoje: { label: "hoje", cor: "#c8ff00" },
+  perdido: { label: "perdido", cor: "#FF6B35" },
+  proximo: { label: "próximo", cor: "#555" },
+  descanso: { label: "descanso", cor: "#333" },
+};
 
 // Inputs de carga × reps de uma série, com feedback da última registrada.
 function LogCarga({ exercicio, cor, ultima, onRegistrar }) {
@@ -64,6 +74,7 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
   const [dashboard, setDashboard] = useState(null);
   const [descanso, setDescanso] = useState(null); // { segundos, chave }
   const [exGrafico, setExGrafico] = useState("");
+  const [fadiga, setFadiga] = useState("normal");
 
   // Carrega histórico, registros e dashboard (agregado no servidor) ao montar.
   useEffect(() => {
@@ -112,6 +123,11 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
   const exercicios = dashboard ? Object.keys(dashboard.progressao) : [];
   const exSelecionado = exGrafico || exercicios[0] || "";
   const dadosCarga = dashboard?.progressao?.[exSelecionado] ?? [];
+
+  // Ajuste de intensidade do dia e planejamento da semana.
+  const exerciciosDoDia = ajustarExercicios(currentDay.exercises, fadiga);
+  const dicaFadiga = NIVEIS_FADIGA.find((n) => n.id === fadiga);
+  const planejamento = planejarSemana(schedule, historico);
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#f0ece4" }}>
@@ -202,9 +218,47 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
               <div style={{ fontSize: 15, fontWeight: 600, color: "#f0ece4", lineHeight: 1.4 }}>{currentDay.focus}</div>
             </div>
 
+            {/* Como você está hoje? (ajuste por fadiga) */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontFamily: "monospace", fontSize: 10, color: "#777", letterSpacing: 2, marginBottom: 8 }}>
+                COMO VOCÊ ESTÁ HOJE?
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {NIVEIS_FADIGA.map((n) => {
+                  const ativo = fadiga === n.id;
+                  return (
+                    <button
+                      key={n.id}
+                      type="button"
+                      onClick={() => setFadiga(n.id)}
+                      style={{
+                        flex: "1 1 0",
+                        minWidth: 96,
+                        background: ativo ? `${accent}18` : "#141414",
+                        border: `1px solid ${ativo ? accent : "#222"}`,
+                        color: ativo ? accent : "#999",
+                        borderRadius: 8,
+                        padding: "10px 8px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {n.emoji} {n.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {fadiga !== "normal" && dicaFadiga && (
+                <div style={{ marginTop: 10, background: `${accent}10`, border: `1px solid ${accent}25`, borderRadius: 6, padding: "10px 12px", fontSize: 12, color: "#bcd", lineHeight: 1.5 }}>
+                  {dicaFadiga.dica}
+                </div>
+              )}
+            </div>
+
             {/* Exercícios */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {currentDay.exercises.map((ex, i) => {
+              {exerciciosDoDia.map((ex, i) => {
                 const isOpen = expandedExercise === i;
                 return (
                   <div key={i} style={{ background: isOpen ? "#141414" : "#0f0f0f", border: `1px solid ${isOpen ? "#2a2a2a" : "#1a1a1a"}`, borderRadius: 8, overflow: "hidden" }}>
@@ -222,10 +276,17 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
                     {isOpen && (
                       <div style={{ padding: "0 16px 16px", borderTop: "1px solid #1a1a1a" }}>
                         <div style={{ display: "flex", gap: 16, marginTop: 12, marginBottom: 12, flexWrap: "wrap" }}>
-                          {[["SÉRIES", ex.sets], ["REPS", ex.reps], ["DESCANSO", ex.rest]].map(([label, val]) => (
+                          {[["SÉRIES", ex.sets, ex.ajusteSets], ["REPS", ex.reps], ["DESCANSO", ex.rest]].map(([label, val, ajuste]) => (
                             <div key={label} style={{ background: "#1a1a1a", borderRadius: 6, padding: "8px 12px" }}>
                               <div style={{ fontFamily: "monospace", fontSize: 9, color: "#555", letterSpacing: 2 }}>{label}</div>
-                              <div style={{ fontFamily: "monospace", fontSize: 14, color: "#f0ece4", fontWeight: 700, marginTop: 2 }}>{val}</div>
+                              <div style={{ fontFamily: "monospace", fontSize: 14, color: "#f0ece4", fontWeight: 700, marginTop: 2 }}>
+                                {val}
+                                {ajuste ? (
+                                  <span style={{ color: accent, fontSize: 10, marginLeft: 4 }}>
+                                    ({ajuste > 0 ? `+${ajuste}` : ajuste})
+                                  </span>
+                                ) : null}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -333,23 +394,45 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
             <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, letterSpacing: -0.5 }}>Estrutura Semanal</h2>
             <p style={{ fontSize: 13, color: "#555", marginBottom: 24, fontFamily: "monospace" }}>{plano.divisao} · {recomendacao.dias} dias</p>
 
+            {/* Reorganização ao faltar treino */}
+            {planejamento.sugestoes.some((s) => s.para) && (
+              <div style={{ background: "#FF6B3510", border: "1px solid #FF6B3530", borderRadius: 8, padding: "14px 18px", marginBottom: 16 }}>
+                <div style={{ fontFamily: "monospace", fontSize: 10, color: "#FF6B35", letterSpacing: 3, marginBottom: 8 }}>
+                  VOCÊ PERDEU {planejamento.perdidos.length} TREINO(S)
+                </div>
+                <div style={{ fontSize: 13, color: "#999", lineHeight: 1.6 }}>
+                  Sugestão para não perder o volume da semana:
+                  <ul style={{ margin: "6px 0 0", padding: "0 0 0 18px" }}>
+                    {planejamento.sugestoes.filter((s) => s.para).map((s, i) => (
+                      <li key={i}>
+                        Faça <strong style={{ color: "#cdd" }}>{DIAS[s.session]?.label ?? s.session}</strong> no {s.para}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 28 }}>
-              {schedule.map((day, i) => {
+              {planejamento.dias.map((day, i) => {
                 const dayData = day.session ? DIAS[day.session] : null;
+                const info = STATUS_SEMANA[day.status];
+                const destaque = day.status === "perdido" || day.status === "hoje";
                 return (
-                  <div key={i} style={{ background: day.rest ? "#0a0a0a" : "#0f0f0f", border: `1px solid ${day.rest ? "#141414" : "#1a1a1a"}`, borderRadius: 8, padding: "14px 18px", display: "flex", alignItems: "center", gap: 16 }}>
+                  <div key={i} style={{ background: day.rest ? "#0a0a0a" : "#0f0f0f", border: `1px solid ${destaque ? `${info.cor}55` : day.rest ? "#141414" : "#1a1a1a"}`, borderRadius: 8, padding: "14px 18px", display: "flex", alignItems: "center", gap: 16 }}>
                     <div style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 700, color: day.rest ? "#333" : "#666", minWidth: 36 }}>{day.day}</div>
                     {day.rest ? (
-                      <div style={{ fontSize: 13, color: "#333", fontStyle: "italic" }}>Descanso / Recuperação Ativa</div>
+                      <div style={{ flex: 1, fontSize: 13, color: "#333", fontStyle: "italic" }}>Descanso / Recuperação Ativa</div>
                     ) : (
                       <>
                         <div style={{ background: dayData.color, color: "#000", borderRadius: 4, padding: "2px 8px", fontFamily: "monospace", fontSize: 11, fontWeight: 700 }}>{dayData.label}</div>
-                        <div>
+                        <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 13, color: "#e8e4dc", fontWeight: 500 }}>{dayData.focus.split(" — ")[0]}</div>
                           <div style={{ fontSize: 11, color: "#555", fontFamily: "monospace", marginTop: 2 }}>{dayData.focus.split(" — ")[1]}</div>
                         </div>
                       </>
                     )}
+                    <div style={{ fontFamily: "monospace", fontSize: 11, color: info.cor, fontWeight: 700 }}>{info.label}</div>
                   </div>
                 );
               })}

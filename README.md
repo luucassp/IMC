@@ -18,6 +18,8 @@ original (preservada em [`legacy/`](./legacy)).
 - Registro de carga × reps por série e histórico de sessões (RF04/RF05)
 - Dashboard de evolução: consistência semanal e progressão de carga (RF07)
 - Trocar o objetivo a qualquer momento (RF08)
+- Ajuste de intensidade por fadiga ("Como você está hoje?")
+- Status da semana e sugestão de remanejar treinos perdidos
 - Persistência local (localStorage), sem necessidade de refazer o onboarding
 
 ## Stack
@@ -93,6 +95,8 @@ src/
     plano.js         # monta o plano e a semana a partir da recomendação
     storage.js       # token de sessão no localStorage
     tempo.js         # parsing/format de descanso
+    fadiga.js        # ajuste de intensidade ("como você está hoje?")
+    semana.js        # status da semana + sugestão de remanejamento
   App.jsx
   main.jsx
 legacy/              # calculadora de IMC original (HTML/CSS/JS puro)
@@ -127,4 +131,4 @@ Google só aparece quando `VITE_GOOGLE_CLIENT_ID` está definido.
   geração do *client secret* (JWT) no servidor — pendente desses pré-requisitos.
 - Trocar SQLite por PostgreSQL gerenciado (Supabase/Railway).
 - Substituir as regras fixas por personalização adaptativa.
-- Ajuste por fadiga e reorganização automática da semana ao faltar treino.
+- Testes automatizados (unit/e2e).
