@@ -1,15 +1,34 @@
 import { useState } from "react";
 import { DIAS, METRICAS } from "../data/planos.js";
+import { carregarHistorico, registrarTreino } from "../lib/storage.js";
 
 const accent = "#c8ff00";
+
+function mesmoDia(isoA, isoB) {
+  return new Date(isoA).toDateString() === new Date(isoB).toDateString();
+}
+
+function formatarData(iso) {
+  return new Date(iso).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
+}
 
 export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
   const { days, schedule, semAcademia } = plano;
   const [activeDay, setActiveDay] = useState(days[0]?.id);
   const [expandedExercise, setExpandedExercise] = useState(null);
   const [tab, setTab] = useState("treino");
+  const [historico, setHistorico] = useState(() => carregarHistorico());
 
   const currentDay = days.find((d) => d.id === activeDay) ?? days[0];
+
+  const hoje = new Date().toISOString();
+  const feitoHoje = historico.some((h) => h.diaId === currentDay.id && mesmoDia(h.data, hoje));
+  const ultimos7 = historico.filter((h) => Date.now() - new Date(h.data).getTime() <= 7 * 864e5).length;
+
+  const concluirTreino = () => {
+    if (feitoHoje) return;
+    setHistorico(registrarTreino({ diaId: currentDay.id, diaLabel: currentDay.label, foco: currentDay.focus }));
+  };
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#f0ece4" }}>
@@ -41,7 +60,7 @@ export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
 
           {/* Tabs */}
           <div style={{ display: "flex", borderBottom: "1px solid #1e1e1e" }}>
-            {[["treino", "Treino"], ["progressao", "Progressão"], ["semana", "Semana"]].map(([id, label]) => (
+            {[["treino", "Treino"], ["progressao", "Progressão"], ["semana", "Semana"], ["historico", "Histórico"]].map(([id, label]) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
@@ -137,6 +156,27 @@ export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
                 );
               })}
             </div>
+
+            <button
+              type="button"
+              onClick={concluirTreino}
+              disabled={feitoHoje}
+              style={{
+                width: "100%",
+                marginTop: 20,
+                background: feitoHoje ? "#141414" : currentDay.color,
+                color: feitoHoje ? "#5a5" : "#000",
+                border: feitoHoje ? "1px solid #2a3a2a" : "none",
+                borderRadius: 8,
+                padding: "15px 20px",
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: feitoHoje ? "default" : "pointer",
+                letterSpacing: 0.5,
+              }}
+            >
+              {feitoHoje ? `✓ ${currentDay.label} concluído hoje` : `Marcar ${currentDay.label} como concluído`}
+            </button>
           </>
         )}
 
@@ -233,6 +273,43 @@ export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {tab === "historico" && (
+          <div>
+            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, letterSpacing: -0.5 }}>Histórico de Treinos</h2>
+            <p style={{ fontSize: 13, color: "#555", marginBottom: 24, fontFamily: "monospace" }}>Registre cada sessão concluída</p>
+
+            <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+              <div style={{ flex: 1, background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 8, padding: "16px 18px" }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: accent }}>{ultimos7}</div>
+                <div style={{ fontSize: 12, color: "#666", fontFamily: "monospace", marginTop: 2 }}>nos últimos 7 dias</div>
+              </div>
+              <div style={{ flex: 1, background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 8, padding: "16px 18px" }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: "#e8e4dc" }}>{historico.length}</div>
+                <div style={{ fontSize: 12, color: "#666", fontFamily: "monospace", marginTop: 2 }}>no total</div>
+              </div>
+            </div>
+
+            {historico.length === 0 ? (
+              <div style={{ background: "#0f0f0f", border: "1px dashed #2a2a2a", borderRadius: 8, padding: "28px 20px", textAlign: "center", fontSize: 13, color: "#555", lineHeight: 1.6 }}>
+                Nenhum treino registrado ainda.<br />Conclua um treino na aba <strong style={{ color: "#888" }}>Treino</strong> para começar.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {historico.map((h) => {
+                  const cor = DIAS[h.diaId]?.color ?? "#888";
+                  return (
+                    <div key={h.id} style={{ background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14 }}>
+                      <div style={{ background: cor, color: "#000", borderRadius: 4, padding: "2px 8px", fontFamily: "monospace", fontSize: 11, fontWeight: 700 }}>{h.diaLabel}</div>
+                      <div style={{ flex: 1, fontSize: 13, color: "#e8e4dc" }}>{h.foco?.split(" — ")[0]}</div>
+                      <div style={{ fontFamily: "monospace", fontSize: 12, color: "#555", textTransform: "capitalize" }}>{formatarData(h.data)}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>

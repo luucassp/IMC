@@ -5,13 +5,26 @@ import Plano from "./components/Plano.jsx";
 import { calcularIMC, classificarIMC } from "./lib/imc.js";
 import { recomendarTreino } from "./lib/recomendacao.js";
 import { gerarPlano } from "./lib/plano.js";
+import { carregarPerfil, salvarPerfil, limparPerfil } from "./lib/storage.js";
 
 export default function App() {
-  const [perfil, setPerfil] = useState(null);
+  const [perfil, setPerfil] = useState(() => carregarPerfil());
   const [view, setView] = useState("resultado");
 
+  const concluirOnboarding = (p) => {
+    salvarPerfil(p);
+    setPerfil(p);
+    setView("resultado");
+  };
+
+  const reiniciar = () => {
+    limparPerfil();
+    setPerfil(null);
+    setView("resultado");
+  };
+
   // Onboarding ainda não concluído.
-  if (!perfil) return <Onboarding onConcluir={(p) => { setPerfil(p); setView("resultado"); }} />;
+  if (!perfil) return <Onboarding onConcluir={concluirOnboarding} />;
 
   const imc = calcularIMC(perfil.peso, perfil.altura);
   const faixa = classificarIMC(imc);
@@ -29,7 +42,7 @@ export default function App() {
       faixa={faixa}
       recomendacao={recomendacao}
       onVerPlano={() => setView("plano")}
-      onReiniciar={() => { setPerfil(null); setView("resultado"); }}
+      onReiniciar={reiniciar}
     />
   );
 }
