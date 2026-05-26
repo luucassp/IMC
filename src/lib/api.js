@@ -27,4 +27,8 @@ export const api = {
   me: (token) => request("/auth/me", { token }),
   getPerfil: (token) => request("/perfil", { token }),
   putPerfil: (token, perfil) => request("/perfil", { method: "PUT", token, body: perfil }),
+  getHistorico: (token) => request("/historico", { token }),
+  addHistorico: (token, entrada) => request("/historico", { method: "POST", token, body: entrada }),
+  getRegistros: (token) => request("/registros", { token }),
+  addRegistro: (token, entrada) => request("/registros", { method: "POST", token, body: entrada }),
 };

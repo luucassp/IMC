@@ -27,8 +27,8 @@ original (preservada em [`legacy/`](./legacy)).
   pronto para PostgreSQL em produção (basta trocar `provider` e `DATABASE_URL`)
 - **Auth**: JWT (e-mail/senha, senha com hash bcrypt)
 
-> Login e perfil já passam pela API. Histórico e registros de carga ainda usam
-> `localStorage` — migrá-los para o banco é o próximo passo.
+> Login, perfil, histórico e registros de carga passam pela API, por usuário.
+> No front, o `localStorage` guarda apenas o token de sessão.
 
 ## Como rodar
 
@@ -65,6 +65,10 @@ npm run build && npm start    # API em http://localhost:3333
 | GET    | `/auth/me`       | JWT  | Dados do usuário autenticado       |
 | GET    | `/perfil`        | JWT  | Perfil físico (ou `null`)          |
 | PUT    | `/perfil`        | JWT  | Cria/atualiza o perfil físico      |
+| GET    | `/historico`     | JWT  | Sessões concluídas (mais recentes) |
+| POST   | `/historico`     | JWT  | Registra uma sessão concluída      |
+| GET    | `/registros`     | JWT  | Séries registradas (carga × reps)  |
+| POST   | `/registros`     | JWT  | Registra uma série                 |
 
 ## Estrutura
 
@@ -85,7 +89,7 @@ src/
     imc.js           # cálculo e classificação de IMC (padrão OMS)
     recomendacao.js  # motor de recomendação por regras
     plano.js         # monta o plano e a semana a partir da recomendação
-    storage.js       # token + persistência local (histórico, registros)
+    storage.js       # token de sessão no localStorage
     tempo.js         # parsing/format de descanso
     estatisticas.js  # agregações do dashboard (frequência, progressão)
   App.jsx
@@ -99,6 +103,7 @@ server/
   src/
     auth/            # registro, login, JWT (estratégia, guard, decorator)
     perfil/          # CRUD do perfil físico (protegido por JWT)
+    treino/          # histórico de sessões + registros de carga (JWT)
     prisma/          # PrismaService/Module
     main.ts          # bootstrap (CORS + ValidationPipe)
     app.module.ts
@@ -106,6 +111,6 @@ server/
 
 ## Próximos passos
 
-- Migrar histórico e registros de carga para o banco (hoje só no `localStorage`).
 - OAuth (Google/Apple) e troca de SQLite por PostgreSQL gerenciado.
 - Substituir as regras fixas por personalização adaptativa.
+- Ajuste por fadiga e reorganização automática da semana ao faltar treino.

@@ -10,12 +10,14 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(uuid())
-  email    String   @unique
+  id        String      @id @default(uuid())
+  email     String      @unique
   senhaHash String
-  nome     String
-  perfil   Perfil?
-  criadoEm DateTime @default(now())
+  nome      String
+  perfil    Perfil?
+  historico Historico[]
+  registros Registro[]
+  criadoEm  DateTime    @default(now())
 }
 
 model Perfil {
@@ -34,4 +36,30 @@ model Perfil {
   equipamentos   String   @default("[]")
   restricoes     String   @default("[]")
   atualizadoEm   DateTime @updatedAt
+}
+
+// Sessões de treino concluídas.
+model Historico {
+  id       String   @id @default(uuid())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  diaId    String
+  diaLabel String
+  foco     String
+  data     DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Séries registradas (carga × reps) por exercício.
+model Registro {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  exercicio String
+  carga     Float
+  reps      Int
+  data      DateTime @default(now())
+
+  @@index([userId])
 }

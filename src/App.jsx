@@ -122,7 +122,7 @@ export default function App() {
   const plano = gerarPlano(perfil, recomendacao);
 
   if (view === "plano") {
-    return <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} onVoltar={() => setView("resultado")} />;
+    return <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("resultado")} />;
   }
 
   return (

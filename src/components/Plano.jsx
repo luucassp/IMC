@@ -1,11 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DIAS, METRICAS } from "../data/planos.js";
-import {
-  carregarHistorico,
-  registrarTreino,
-  carregarRegistros,
-  registrarSerie,
-} from "../lib/storage.js";
+import { api } from "../lib/api.js";
 import { parseDescanso } from "../lib/tempo.js";
 import { frequenciaPorSemana, exerciciosComRegistro, progressaoCarga } from "../lib/estatisticas.js";
 import RestTimer from "./RestTimer.jsx";
@@ -60,15 +55,30 @@ function LogCarga({ exercicio, cor, ultima, onRegistrar }) {
   );
 }
 
-export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
+export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) {
   const { days, schedule, semAcademia } = plano;
   const [activeDay, setActiveDay] = useState(days[0]?.id);
   const [expandedExercise, setExpandedExercise] = useState(null);
   const [tab, setTab] = useState("treino");
-  const [historico, setHistorico] = useState(() => carregarHistorico());
-  const [registros, setRegistros] = useState(() => carregarRegistros());
+  const [historico, setHistorico] = useState([]);
+  const [registros, setRegistros] = useState([]);
   const [descanso, setDescanso] = useState(null); // { segundos, chave }
   const [exGrafico, setExGrafico] = useState("");
+
+  // Carrega histórico e registros do usuário ao montar.
+  useEffect(() => {
+    let ativo = true;
+    Promise.all([api.getHistorico(token), api.getRegistros(token)])
+      .then(([h, r]) => {
+        if (!ativo) return;
+        setHistorico(h);
+        setRegistros(r);
+      })
+      .catch(() => {});
+    return () => {
+      ativo = false;
+    };
+  }, [token]);
 
   const currentDay = days.find((d) => d.id === activeDay) ?? days[0];
 
@@ -76,14 +86,18 @@ export default function Plano({ plano, perfil, recomendacao, onVoltar }) {
   const feitoHoje = historico.some((h) => h.diaId === currentDay.id && mesmoDia(h.data, hoje));
   const ultimos7 = historico.filter((h) => Date.now() - new Date(h.data).getTime() <= 7 * 864e5).length;
 
-  const concluirTreino = () => {
+  const concluirTreino = async () => {
     if (feitoHoje) return;
-    setHistorico(registrarTreino({ diaId: currentDay.id, diaLabel: currentDay.label, foco: currentDay.focus }));
+    const novo = await api.addHistorico(token, { diaId: currentDay.id, diaLabel: currentDay.label, foco: currentDay.focus });
+    setHistorico((prev) => [novo, ...prev]);
   };
 
   const iniciarDescanso = (rest) => setDescanso({ segundos: parseDescanso(rest), chave: Date.now() });
 
-  const salvarSerie = (entrada) => setRegistros(registrarSerie(entrada));
+  const salvarSerie = async (entrada) => {
+    const novo = await api.addRegistro(token, entrada);
+    setRegistros((prev) => [novo, ...prev]);
+  };
 
   const ultimaSerieDe = (nome) => registros.find((r) => r.exercicio === nome);
 
