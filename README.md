@@ -22,17 +22,44 @@ original (preservada em [`legacy/`](./legacy)).
 
 ## Stack
 
-- React 18 + Vite
-- Sem backend ainda — regras fixas e persistência no `localStorage`
+- **Front-end**: React 18 + Vite (raiz do repositório)
+- **Back-end**: NestJS + Prisma + SQLite (em [`server/`](./server)); SQLite no dev,
+  pronto para PostgreSQL em produção (basta trocar `provider` e `DATABASE_URL`)
+- **Auth**: JWT (e-mail/senha, senha com hash bcrypt)
+
+> O front ainda usa `localStorage`. A integração com a API (login na tela,
+> sincronização do perfil) é o próximo passo.
 
 ## Como rodar
 
+### Front-end (raiz)
+
 ```bash
 npm install
-npm run dev      # ambiente de desenvolvimento (http://localhost:5173)
+npm run dev      # http://localhost:5173
 npm run build    # build de produção em dist/
-npm run preview  # serve o build de produção
 ```
+
+### Back-end (server/)
+
+```bash
+cd server
+cp .env.example .env          # ajuste JWT_SECRET; DATABASE_URL já aponta p/ SQLite
+npm install
+npx prisma migrate dev        # cria o banco e gera o Prisma Client
+npm run build && npm start    # API em http://localhost:3333
+# ou: npm run start:dev       # com watch
+```
+
+#### Endpoints
+
+| Método | Rota             | Auth | Descrição                          |
+| ------ | ---------------- | ---- | ---------------------------------- |
+| POST   | `/auth/register` | —    | Cria conta → `{ token, user }`     |
+| POST   | `/auth/login`    | —    | Autentica → `{ token, user }`      |
+| GET    | `/auth/me`       | JWT  | Dados do usuário autenticado       |
+| GET    | `/perfil`        | JWT  | Perfil físico (ou `null`)          |
+| PUT    | `/perfil`        | JWT  | Cria/atualiza o perfil físico      |
 
 ## Estrutura
 
@@ -57,10 +84,22 @@ src/
   App.jsx
   main.jsx
 legacy/              # calculadora de IMC original (HTML/CSS/JS puro)
+
+server/
+  prisma/
+    schema.prisma    # modelos User e Perfil
+    migrations/      # migrations versionadas
+  src/
+    auth/            # registro, login, JWT (estratégia, guard, decorator)
+    perfil/          # CRUD do perfil físico (protegido por JWT)
+    prisma/          # PrismaService/Module
+    main.ts          # bootstrap (CORS + ValidationPipe)
+    app.module.ts
 ```
 
 ## Próximos passos
 
-- Autenticação e backend (login, sincronização entre dispositivos).
+- Integrar o front à API: tela de login/registro, cliente HTTP e contexto de auth.
+- Migrar histórico e registros de carga para o banco (hoje só no `localStorage`).
+- OAuth (Google/Apple) e troca de SQLite por PostgreSQL gerenciado.
 - Substituir as regras fixas por personalização adaptativa.
-- Ajuste por fadiga e reorganização automática da semana ao faltar treino.
