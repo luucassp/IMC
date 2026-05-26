@@ -26,12 +26,21 @@ function Linha({ label, valor }) {
   );
 }
 
-export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano, onTrocarObjetivo, onReiniciar }) {
+export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano, onTrocarObjetivo, onReiniciar, onSair }) {
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 20px 60px" }}>
-      <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
-        Perfil concluído
-      </span>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+        <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
+          Perfil concluído
+        </span>
+        <button
+          type="button"
+          onClick={onSair}
+          style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 13 }}
+        >
+          Sair
+        </button>
+      </div>
       <h1 style={{ fontSize: 26, fontWeight: 700, margin: "6px 0 28px", letterSpacing: -0.5 }}>
         Pronto, {perfil.nome.split(" ")[0]} 👊
       </h1>

@@ -9,7 +9,6 @@ import {
 } from "../data/onboarding.js";
 
 const PERFIL_INICIAL = {
-  nome: "",
   idade: "",
   sexo: "",
   altura: "",
@@ -68,7 +67,7 @@ function Card({ ativo, selecionado, onClick, children }) {
   );
 }
 
-export default function Onboarding({ onConcluir }) {
+export default function Onboarding({ onConcluir, erro }) {
   const [etapa, setEtapa] = useState(0);
   const [perfil, setPerfil] = useState(PERFIL_INICIAL);
 
@@ -84,24 +83,6 @@ export default function Onboarding({ onConcluir }) {
     });
 
   const etapas = [
-    {
-      titulo: "Vamos começar",
-      sub: "Como podemos te chamar?",
-      valido: () => perfil.nome.trim().length > 0,
-      render: () => (
-        <div>
-          <label style={s.campoLabel} htmlFor="nome">Seu nome</label>
-          <input
-            id="nome"
-            style={s.input}
-            value={perfil.nome}
-            onChange={(e) => set("nome", e.target.value)}
-            placeholder="Ex.: Sérgio"
-            autoFocus
-          />
-        </div>
-      ),
-    },
     {
       titulo: "Sobre você",
       sub: "Idade e sexo biológico",
@@ -119,6 +100,7 @@ export default function Onboarding({ onConcluir }) {
               value={perfil.idade}
               onChange={(e) => set("idade", e.target.value)}
               placeholder="Ex.: 28"
+              autoFocus
             />
           </div>
           <div>
@@ -325,6 +307,12 @@ export default function Onboarding({ onConcluir }) {
 
       {/* Conteúdo */}
       <div style={{ marginBottom: 32 }}>{etapaAtual.render()}</div>
+
+      {erro && (
+        <div style={{ background: "#FF3B3B15", border: "1px solid #FF3B3B40", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#ff8c8c", marginBottom: 12 }}>
+          {erro}
+        </div>
+      )}
 
       {/* Navegação */}
       <div style={{ display: "flex", gap: 12 }}>

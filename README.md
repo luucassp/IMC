@@ -27,10 +27,12 @@ original (preservada em [`legacy/`](./legacy)).
   pronto para PostgreSQL em produção (basta trocar `provider` e `DATABASE_URL`)
 - **Auth**: JWT (e-mail/senha, senha com hash bcrypt)
 
-> O front ainda usa `localStorage`. A integração com a API (login na tela,
-> sincronização do perfil) é o próximo passo.
+> Login e perfil já passam pela API. Histórico e registros de carga ainda usam
+> `localStorage` — migrá-los para o banco é o próximo passo.
 
 ## Como rodar
+
+> Suba o **back-end** primeiro; o front precisa dele para login e perfil.
 
 ### Front-end (raiz)
 
@@ -39,6 +41,9 @@ npm install
 npm run dev      # http://localhost:5173
 npm run build    # build de produção em dist/
 ```
+
+Por padrão o front aponta para `http://localhost:3333`. Para mudar, crie um
+`.env.local` na raiz com `VITE_API_URL=...`.
 
 ### Back-end (server/)
 
@@ -66,6 +71,7 @@ npm run build && npm start    # API em http://localhost:3333
 ```
 src/
   components/
+    Auth.jsx         # tela de login / registro
     Onboarding.jsx   # questionário multi-etapas (perfil físico)
     Resultado.jsx    # IMC + classificação + recomendação + trocar objetivo
     Plano.jsx        # plano completo (treino, progressão, semana, evolução)
@@ -75,10 +81,11 @@ src/
     onboarding.js    # opções dos campos (objetivos, níveis, equipamentos...)
     planos.js        # biblioteca de dias de treino + templates de divisão
   lib/
+    api.js           # cliente HTTP da API (auth + perfil)
     imc.js           # cálculo e classificação de IMC (padrão OMS)
     recomendacao.js  # motor de recomendação por regras
     plano.js         # monta o plano e a semana a partir da recomendação
-    storage.js       # persistência (perfil, histórico, registros de carga)
+    storage.js       # token + persistência local (histórico, registros)
     tempo.js         # parsing/format de descanso
     estatisticas.js  # agregações do dashboard (frequência, progressão)
   App.jsx
@@ -99,7 +106,6 @@ server/
 
 ## Próximos passos
 
-- Integrar o front à API: tela de login/registro, cliente HTTP e contexto de auth.
 - Migrar histórico e registros de carga para o banco (hoje só no `localStorage`).
 - OAuth (Google/Apple) e troca de SQLite por PostgreSQL gerenciado.
 - Substituir as regras fixas por personalização adaptativa.

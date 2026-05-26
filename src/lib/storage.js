@@ -5,6 +5,7 @@ const PREFIXO = "imc-treino";
 const K_PERFIL = `${PREFIXO}:perfil:v1`;
 const K_HIST = `${PREFIXO}:historico:v1`;
 const K_REG = `${PREFIXO}:registros:v1`;
+const K_TOKEN = `${PREFIXO}:token:v1`;
 
 function ler(chave, fallback) {
   try {
@@ -29,6 +30,26 @@ function remover(chave) {
   } catch {
     /* ignora */
   }
+}
+
+export function carregarToken() {
+  try {
+    return localStorage.getItem(K_TOKEN);
+  } catch {
+    return null;
+  }
+}
+
+export function salvarToken(token) {
+  try {
+    localStorage.setItem(K_TOKEN, token);
+  } catch {
+    /* ignora */
+  }
+}
+
+export function limparToken() {
+  remover(K_TOKEN);
 }
 
 export function carregarPerfil() {
