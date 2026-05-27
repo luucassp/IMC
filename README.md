@@ -25,8 +25,7 @@ original (preservada em [`legacy/`](./legacy)).
 ## Stack
 
 - **Front-end**: React 18 + Vite (raiz do repositório)
-- **Back-end**: NestJS + Prisma + SQLite (em [`server/`](./server)); SQLite no dev,
-  pronto para PostgreSQL em produção (basta trocar `provider` e `DATABASE_URL`)
+- **Back-end**: NestJS + Prisma + PostgreSQL (em [`server/`](./server))
 - **Auth**: JWT (e-mail/senha com hash bcrypt) + login com Google (opcional)
 
 > Login, perfil, histórico e registros de carga passam pela API, por usuário.
@@ -49,11 +48,14 @@ Por padrão o front aponta para `http://localhost:3333`. Para mudar, crie um
 
 ### Back-end (server/)
 
+Precisa de um PostgreSQL. Em dev, suba um local via Docker ou use um banco
+free (Supabase/Neon) — veja [DEPLOY.md](./DEPLOY.md).
+
 ```bash
 cd server
-cp .env.example .env          # ajuste JWT_SECRET; DATABASE_URL já aponta p/ SQLite
-npm install
-npx prisma migrate dev        # cria o banco e gera o Prisma Client
+cp .env.example .env          # ajuste DATABASE_URL e JWT_SECRET
+npm install                   # postinstall já roda "prisma generate"
+npm run db:push               # cria as tabelas no banco
 npm run build && npm start    # API em http://localhost:3333
 # ou: npm run start:dev       # com watch
 ```
@@ -103,8 +105,8 @@ legacy/              # calculadora de IMC original (HTML/CSS/JS puro)
 
 server/
   prisma/
-    schema.prisma    # modelos User e Perfil
-    migrations/      # migrations versionadas
+    schema.prisma    # modelos User, Perfil, Historico, Registro
+  render.yaml        # blueprint de deploy (Render)
   src/
     auth/            # registro, login, JWT (estratégia, guard, decorator)
     perfil/          # CRUD do perfil físico (protegido por JWT)
@@ -125,10 +127,14 @@ server/
 Sem essas variáveis o app funciona normalmente por e-mail/senha; o botão do
 Google só aparece quando `VITE_GOOGLE_CLIENT_ID` está definido.
 
+## Deploy
+
+Front no Netlify, backend no Render, banco no Supabase/Neon.
+Passo a passo em [DEPLOY.md](./DEPLOY.md).
+
 ## Próximos passos
 
 - **Login com Apple**: requer conta paga no Apple Developer, chave `.p8` e
   geração do *client secret* (JWT) no servidor — pendente desses pré-requisitos.
-- Trocar SQLite por PostgreSQL gerenciado (Supabase/Railway).
 - Substituir as regras fixas por personalização adaptativa.
 - Testes automatizados (unit/e2e).

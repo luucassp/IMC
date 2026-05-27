@@ -1,11 +1,10 @@
-// SQLite no dev. Para Postgres, troque provider para "postgresql"
-// e a DATABASE_URL no .env.
+// PostgreSQL (dev e produção). A connection string vem do .env.
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
