@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { api } from "../lib/api.js";
+import CelestialSphere from "./ui/celestial-sphere";
 
 const accent = "#c8ff00";
 const GOOGLE_CLIENT_ID = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
@@ -96,7 +97,27 @@ export default function Auth({ onAutenticado }) {
   };
 
   return (
-    <div style={{ maxWidth: 420, margin: "0 auto", padding: "60px 20px" }}>
+    <div style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "#000" }}>
+      <CelestialSphere
+        hue={210}
+        speed={0.4}
+        zoom={1.2}
+        particleSize={4.0}
+        className="absolute inset-0 w-full h-full"
+      />
+      <div style={{
+        position: "relative",
+        zIndex: 10,
+        width: "100%",
+        maxWidth: 420,
+        margin: "0 auto",
+        padding: "48px 32px",
+        background: "rgba(10,10,10,0.75)",
+        backdropFilter: "blur(18px)",
+        borderRadius: 16,
+        border: "1px solid rgba(255,255,255,0.07)",
+        boxShadow: "0 8px 40px rgba(0,0,0,0.6)",
+      }}>
       <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
         IMC + Treino
       </span>
@@ -181,6 +202,7 @@ export default function Auth({ onAutenticado }) {
       >
         {ehRegistro ? "Já tem conta? Entrar" : "Não tem conta? Criar agora"}
       </button>
+      </div>
     </div>
   );
 }
