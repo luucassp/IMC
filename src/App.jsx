@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Auth from "./components/Auth.jsx";
 import Onboarding from "./components/Onboarding.jsx";
+import Home from "./components/Home.tsx";
 import Resultado from "./components/Resultado.jsx";
 import Plano from "./components/Plano.jsx";
 import { calcularIMC, classificarIMC } from "./lib/imc.js";
@@ -38,7 +39,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [perfil, setPerfil] = useState(null);
   const [carregando, setCarregando] = useState(Boolean(token));
-  const [view, setView] = useState("resultado");
+  const [view, setView] = useState("home");
   const [erro, setErro] = useState("");
 
   // Ao ter token (login ou restaurado), valida e busca o perfil.
@@ -81,7 +82,7 @@ export default function App() {
     setToken(null);
     setUser(null);
     setPerfil(null);
-    setView("resultado");
+    setView("home");
   };
 
   const concluirOnboarding = async (p) => {
@@ -89,7 +90,7 @@ export default function App() {
     try {
       const salvo = await api.putPerfil(token, perfilParaApi(p));
       setPerfil(salvo);
-      setView("resultado");
+      setView("home");
     } catch (e) {
       setErro(e.message || "Não foi possível salvar seu perfil.");
     }
@@ -108,7 +109,7 @@ export default function App() {
 
   const refazer = () => {
     setPerfil(null);
-    setView("resultado");
+    setView("home");
   };
 
   if (!token) return <Auth onAutenticado={aoAutenticar} />;
@@ -122,18 +123,36 @@ export default function App() {
   const plano = gerarPlano(perfil, recomendacao);
 
   if (view === "plano") {
-    return <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("resultado")} />;
+    return <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} />;
+  }
+
+  if (view === "perfil") {
+    return (
+      <Resultado
+        perfil={perfilUI}
+        imc={imc}
+        faixa={faixa}
+        recomendacao={recomendacao}
+        onVerPlano={() => setView("plano")}
+        onTrocarObjetivo={trocarObjetivo}
+        onReiniciar={refazer}
+        onVoltar={() => setView("home")}
+        onSair={sair}
+      />
+    );
   }
 
   return (
-    <Resultado
+    <Home
+      user={user}
       perfil={perfilUI}
       imc={imc}
       faixa={faixa}
       recomendacao={recomendacao}
+      plano={plano}
+      token={token}
       onVerPlano={() => setView("plano")}
-      onTrocarObjetivo={trocarObjetivo}
-      onReiniciar={refazer}
+      onVerPerfil={() => setView("perfil")}
       onSair={sair}
     />
   );

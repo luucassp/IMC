@@ -26,12 +26,21 @@ function Linha({ label, valor }) {
   );
 }
 
-export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano, onTrocarObjetivo, onReiniciar, onSair }) {
+export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano, onTrocarObjetivo, onReiniciar, onVoltar, onSair }) {
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 20px 60px" }}>
+      {onVoltar && (
+        <button
+          type="button"
+          onClick={onVoltar}
+          style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 13, padding: 0, marginBottom: 12 }}
+        >
+          ← Voltar
+        </button>
+      )}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
         <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
-          Perfil concluído
+          Meu perfil
         </span>
         <button
           type="button"
