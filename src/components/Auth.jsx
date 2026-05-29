@@ -43,6 +43,7 @@ export default function Auth({ onAutenticado }) {
   const [nome, setNome] = useState("");
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const googleBtnRef = useRef(null);
 
   const ehRegistro = modo === "registro";
@@ -148,15 +149,37 @@ export default function Auth({ onAutenticado }) {
           autoComplete="email"
           required
         />
-        <input
-          style={inputStyle}
-          type="password"
-          placeholder="Senha (mín. 6 caracteres)"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
-          autoComplete={ehRegistro ? "new-password" : "current-password"}
-          required
-        />
+        <div style={{ position: "relative" }}>
+          <input
+            style={{ ...inputStyle, paddingRight: 64 }}
+            type={mostrarSenha ? "text" : "password"}
+            placeholder="Senha (mín. 6 caracteres)"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            autoComplete={ehRegistro ? "new-password" : "current-password"}
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setMostrarSenha((v) => !v)}
+            aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+            style={{
+              position: "absolute",
+              right: 10,
+              top: 0,
+              bottom: 12,
+              background: "none",
+              border: "none",
+              color: "#888",
+              cursor: "pointer",
+              fontSize: 12,
+              fontFamily: "monospace",
+              padding: "0 8px",
+            }}
+          >
+            {mostrarSenha ? "ocultar" : "mostrar"}
+          </button>
+        </div>
 
         {erro && (
           <div style={{ background: "#FF3B3B15", border: "1px solid #FF3B3B40", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#ff8c8c", marginBottom: 12 }}>
