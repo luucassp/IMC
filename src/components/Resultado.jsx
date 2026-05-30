@@ -6,9 +6,16 @@ function rotulo(lista, id) {
   return lista.find((x) => x.id === id)?.label ?? id;
 }
 
-function Bloco({ titulo, children }) {
+function Bloco({ titulo, children, delay = 0 }) {
   return (
-    <div style={{ background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 10, padding: "18px 20px" }}>
+    <div style={{
+      background: "linear-gradient(145deg, #111318 0%, #0d0d0f 100%)",
+      border: "1px solid rgba(255,255,255,0.04)",
+      borderRadius: 12,
+      padding: "18px 20px",
+      boxShadow: "0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+      animation: `fadeUp 0.5s ${delay}s ease both`,
+    }}>
       <div style={{ fontFamily: "monospace", fontSize: 10, color: accent, letterSpacing: 3, marginBottom: 14 }}>
         {titulo}
       </div>
@@ -26,42 +33,115 @@ function Linha({ label, valor }) {
   );
 }
 
-export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano, onReiniciar }) {
+export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano, onTrocarObjetivo, onReiniciar, onVoltar, onSair }) {
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 20px 60px" }}>
-      <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
-        Perfil concluído
-      </span>
-      <h1 style={{ fontSize: 26, fontWeight: 700, margin: "6px 0 28px", letterSpacing: -0.5 }}>
-        Pronto, {perfil.nome.split(" ")[0]} 👊
+      {onVoltar && (
+        <button
+          type="button"
+          onClick={onVoltar}
+          style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 13, padding: 0, marginBottom: 12 }}
+        >
+          ← Voltar
+        </button>
+      )}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+        <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
+          Meu perfil
+        </span>
+        <button
+          type="button"
+          onClick={onSair}
+          style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 13 }}
+        >
+          Sair
+        </button>
+      </div>
+      <h1 style={{
+        fontSize: "clamp(36px, 9vw, 60px)",
+        fontWeight: 900,
+        margin: "6px 0 28px",
+        letterSpacing: -3,
+        lineHeight: 0.95,
+        background: "linear-gradient(135deg, #f0ece4 0%, #666 100%)",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        animation: "fadeUp 0.5s ease both",
+      }}>
+        Pronto, {perfil.nome.split(" ")[0]}
       </h1>
 
-      {/* IMC em destaque */}
-      <div
-        style={{
-          background: `${faixa.cor}12`,
-          border: `1px solid ${faixa.cor}40`,
-          borderLeft: `4px solid ${faixa.cor}`,
-          borderRadius: 12,
-          padding: "22px 24px",
-          marginBottom: 16,
-        }}
-      >
-        <div style={{ fontFamily: "monospace", fontSize: 10, color: faixa.cor, letterSpacing: 3, marginBottom: 8 }}>
-          SEU IMC
+      {/* Card de perfil de treino */}
+      <div style={{ marginBottom: 16, animation: "fadeUp 0.5s 0.08s ease both" }}>
+        <div style={{ fontFamily: "monospace", fontSize: 10, color: "#555", letterSpacing: 3, marginBottom: 12 }}>
+          PERFIL DE TREINO
         </div>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
-          <span style={{ fontSize: 44, fontWeight: 700, lineHeight: 1, color: "#fff" }}>{imc}</span>
-          <span style={{ fontSize: 16, fontWeight: 600, color: faixa.cor }}>{faixa.classe}</span>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{
+            flex: 1,
+            background: "linear-gradient(145deg, #111318 0%, #0d0d0f 100%)",
+            border: "1px solid rgba(255,255,255,0.04)",
+            borderRadius: 12,
+            padding: "16px 14px",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+          }}>
+            <div style={{ fontSize: 10, color: "#555", fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>Nível</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#e8e4dc", lineHeight: 1.2 }}>{rotulo(NIVEIS, perfil.nivel)}</div>
+          </div>
+          <div style={{
+            flex: 1,
+            background: `linear-gradient(135deg, ${accent}20 0%, ${accent}08 100%)`,
+            border: `1px solid ${accent}40`,
+            borderRadius: 12,
+            padding: "16px 14px",
+            boxShadow: `0 0 32px ${accent}12, inset 0 1px 0 ${accent}30`,
+          }}>
+            <div style={{ fontSize: 10, color: accent, fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>Dias/sem.</div>
+            <div style={{ fontSize: 42, fontWeight: 900, color: accent, lineHeight: 1, textShadow: `0 0 24px ${accent}60` }}>{recomendacao.dias}</div>
+          </div>
+          <div style={{
+            flex: 1,
+            background: "linear-gradient(145deg, #111318 0%, #0d0d0f 100%)",
+            border: "1px solid rgba(255,255,255,0.04)",
+            borderRadius: 12,
+            padding: "16px 14px",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+          }}>
+            <div style={{ fontSize: 10, color: "#555", fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>Divisão</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#e8e4dc", lineHeight: 1.3 }}>{recomendacao.divisao}</div>
+          </div>
         </div>
-        <div style={{ fontSize: 12, color: "#666", marginTop: 10, fontFamily: "monospace" }}>
-          {perfil.peso} kg · {perfil.altura} cm
+        <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+          <div style={{
+            flex: 1,
+            background: "linear-gradient(145deg, #111318 0%, #0d0d0f 100%)",
+            border: "1px solid rgba(255,255,255,0.04)",
+            borderRadius: 10,
+            padding: "12px 14px",
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+          }}>
+            <span style={{ fontSize: 11, color: "#555", fontFamily: "monospace" }}>Volume</span>
+            <span style={{ fontSize: 13, color: "#e8e4dc", fontWeight: 600 }}>{recomendacao.volume}</span>
+          </div>
+          <div style={{
+            flex: 1,
+            background: "linear-gradient(145deg, #111318 0%, #0d0d0f 100%)",
+            border: "1px solid rgba(255,255,255,0.04)",
+            borderRadius: 10,
+            padding: "12px 14px",
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+          }}>
+            <span style={{ fontSize: 11, color: "#555", fontFamily: "monospace" }}>Reps</span>
+            <span style={{ fontSize: 13, color: "#e8e4dc", fontWeight: 600 }}>{recomendacao.reps}</span>
+          </div>
         </div>
       </div>
 
       {/* Recomendação */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
-        <Bloco titulo="TREINO RECOMENDADO">
+        <Bloco titulo="TREINO RECOMENDADO" delay={0.16}>
           <Linha label="Divisão" valor={recomendacao.divisao} />
           <Linha label="Frequência" valor={`${recomendacao.dias}x por semana`} />
           <Linha label="Faixa de repetições" valor={recomendacao.reps} />
@@ -94,10 +174,36 @@ export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano
           </div>
         )}
 
-        <Bloco titulo="SEU PERFIL">
-          <Linha label="Objetivo" valor={rotulo(OBJETIVOS, perfil.objetivo)} />
+        <Bloco titulo="SEU PERFIL" delay={0.24}>
           <Linha label="Nível" valor={rotulo(NIVEIS, perfil.nivel)} />
           <Linha label="Tempo por treino" valor={`${perfil.tempoPorTreino} min`} />
+          <div style={{ paddingTop: 12 }}>
+            <div style={{ fontSize: 13, color: "#777", marginBottom: 10 }}>Objetivo (toque para trocar)</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {OBJETIVOS.map((o) => {
+                const ativo = perfil.objetivo === o.id;
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    onClick={() => onTrocarObjetivo(o.id)}
+                    style={{
+                      background: ativo ? `${accent}18` : "#141414",
+                      border: `1px solid ${ativo ? accent : "#222"}`,
+                      color: ativo ? accent : "#999",
+                      borderRadius: 999,
+                      padding: "6px 12px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {o.icon} {o.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </Bloco>
       </div>
 
@@ -109,13 +215,15 @@ export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano
           background: accent,
           color: "#000",
           border: "none",
-          borderRadius: 8,
-          padding: "16px 20px",
+          borderRadius: 999,
+          padding: "18px 20px",
           fontSize: 15,
-          fontWeight: 700,
+          fontWeight: 800,
           cursor: "pointer",
           letterSpacing: 0.5,
           marginBottom: 12,
+          boxShadow: `0 0 32px ${accent}50, 0 4px 16px rgba(0,0,0,0.5)`,
+          animation: "fadeUp 0.5s 0.32s ease both",
         }}
       >
         Ver plano completo →
@@ -128,7 +236,7 @@ export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano
           background: "none",
           border: "1px solid #2a2a2a",
           color: "#888",
-          borderRadius: 8,
+          borderRadius: 999,
           padding: "14px 20px",
           fontSize: 14,
           cursor: "pointer",

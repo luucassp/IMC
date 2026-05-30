@@ -1,0 +1,21 @@
+# Deploy do backend (NestJS) no Render — Blueprint.
+# No painel do Render: New > Blueprint, aponte para este repositório.
+# Defina DATABASE_URL, CORS_ORIGIN e (opcional) GOOGLE_CLIENT_ID ao subir.
+services:
+  - type: web
+    name: imc-treino-api
+    runtime: node
+    rootDir: server
+    plan: free
+    # postinstall já roda "prisma generate"; db push sincroniza o schema.
+    buildCommand: npm install && npm run build && npx prisma db push
+    startCommand: npm start
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false

@@ -1,0 +1,66 @@
+// PostgreSQL (dev e produção). A connection string vem do .env.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String      @id @default(uuid())
+  email     String      @unique
+  senhaHash String?     // nulo em contas que só usam login social
+  nome      String
+  googleId  String?     @unique
+  avatarUrl String?
+  perfil    Perfil?
+  historico Historico[]
+  registros Registro[]
+  criadoEm  DateTime    @default(now())
+}
+
+model Perfil {
+  id             String   @id @default(uuid())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String   @unique
+  idade          Int?
+  sexo           String?
+  altura         Float?
+  peso           Float?
+  objetivo       String?
+  nivel          String?
+  diasPorSemana  Int?
+  tempoPorTreino Int?
+  // Arrays serializados em JSON (SQLite não tem tipo array nativo).
+  equipamentos   String   @default("[]")
+  restricoes     String   @default("[]")
+  atualizadoEm   DateTime @updatedAt
+}
+
+// Sessões de treino concluídas.
+model Historico {
+  id       String   @id @default(uuid())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  diaId    String
+  diaLabel String
+  foco     String
+  data     DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Séries registradas (carga × reps) por exercício.
+model Registro {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  exercicio String
+  carga     Float
+  reps      Int
+  data      DateTime @default(now())
+
+  @@index([userId])
+}
