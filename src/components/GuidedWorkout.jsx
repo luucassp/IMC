@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { buscarImagemExercicio } from "../lib/wger.js";
 
 function formatarTimer(segundos) {
   const s = Math.max(0, segundos);
@@ -11,8 +10,7 @@ export default function GuidedWorkout({ exercicios, nivel, cor, onConcluir, onSa
   const [serieAtual, setSerieAtual] = useState(1);
   const [fase, setFase] = useState("exercicio"); // "exercicio" | "descanso" | "concluido"
   const [tempoRestante, setTempoRestante] = useState(0);
-  const [imagemUrl, setImagemUrl] = useState(null);
-  const [imgCarregando, setImgCarregando] = useState(false);
+  const imagemUrl = ex?.imgUrl ?? null;
 
   const ex = exercicios[exIdx];
   const prescricao = ex?.prescricao?.[nivel] || { sets: parseInt(ex?.sets) || 3, reps: ex?.reps || "10–12", rest: 75 };
@@ -22,15 +20,6 @@ export default function GuidedWorkout({ exercicios, nivel, cor, onConcluir, onSa
   const totalSetsGeral = exercicios.reduce((acc, e) => acc + (e.prescricao?.[nivel]?.sets ?? parseInt(e.sets) ?? 3), 0);
   const setsFeitos = exercicios.slice(0, exIdx).reduce((acc, e) => acc + (e.prescricao?.[nivel]?.sets ?? parseInt(e.sets) ?? 3), 0) + (serieAtual - 1);
   const progresso = totalSetsGeral > 0 ? (setsFeitos / totalSetsGeral) * 100 : 0;
-
-  useEffect(() => {
-    if (!ex?.englishName) return;
-    setImagemUrl(null);
-    setImgCarregando(true);
-    buscarImagemExercicio(ex.englishName)
-      .then((url) => setImagemUrl(url))
-      .finally(() => setImgCarregando(false));
-  }, [exIdx, ex?.englishName]);
 
   const avancar = useCallback(() => {
     if (serieAtual < totalSeries) {
@@ -189,13 +178,9 @@ export default function GuidedWorkout({ exercicios, nivel, cor, onConcluir, onSa
 
         {/* Imagem do exercício */}
         <div style={{ background: "#111", borderRadius: 12, marginBottom: 16, overflow: "hidden", minHeight: 180, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {imgCarregando && (
-            <div style={{ color: "#333", fontFamily: "monospace", fontSize: 12 }}>carregando imagem...</div>
-          )}
-          {!imgCarregando && imagemUrl && (
+          {imagemUrl ? (
             <img src={imagemUrl} alt={ex.name} style={{ width: "100%", maxHeight: 260, objectFit: "contain" }} />
-          )}
-          {!imgCarregando && !imagemUrl && (
+          ) : (
             <div style={{ textAlign: "center", padding: 24 }}>
               <div style={{ fontSize: 48, marginBottom: 8 }}>💪</div>
               <div style={{ color: "#333", fontSize: 11, fontFamily: "monospace" }}>{ex.englishName}</div>

@@ -14,6 +14,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Supino Inclinado com Barra",
         englishName: "Incline Bench Press",
+        imgUrl: "https://wger.de/media/exercise-images/41/Incline-bench-press-1.png",
         muscles: ["Peito superior", "Deltóide anterior", "Tríceps"],
         cues: [
           "Banco entre 30° e 45° — mais inclinado foca mais no ombro",
@@ -32,6 +33,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Desenvolvimento com Halteres",
         englishName: "Dumbbell Shoulder Press",
+        imgUrl: "https://wger.de/media/exercise-images/97/Dumbbell-bench-press-1.png",
         muscles: ["Deltóide", "Tríceps"],
         cues: [
           "Coluna neutra — não hiperextenda a lombar",
@@ -68,6 +70,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Elevação Lateral",
         englishName: "Lateral Raise",
+        imgUrl: "https://wger.de/media/exercise-images/148/lateral-dumbbell-raises-large-2.png",
         muscles: ["Deltóide medial"],
         cues: [
           "Carga leve com controle total — não use impulso",
@@ -86,6 +89,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Tríceps Corda na Polia",
         englishName: "Triceps Pushdown",
+        imgUrl: "https://wger.de/media/exercise-images/659/a60452f1-e2ea-43fe-baa6-c1a2208d060c.png",
         muscles: ["Tríceps"],
         cues: [
           "Cotovelos fixos ao lado do tronco durante todo o movimento",
@@ -104,6 +108,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Mergulho no Banco",
         englishName: "Triceps Dip",
+        imgUrl: "https://wger.de/media/exercise-images/83/Bench-dips-1.png",
         muscles: ["Tríceps", "Peito inferior"],
         cues: [
           "Cotovelos apontam para trás — não para os lados",
@@ -132,6 +137,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Barra Fixa (ou Puxada)",
         englishName: "Pull-up",
+        imgUrl: "https://wger.de/media/exercise-images/475/b0554016-16fd-4dbe-be47-a2a17d16ae0e.jpg",
         muscles: ["Dorsal", "Bíceps", "Rombóide"],
         cues: [
           "Retrair as escápulas ANTES de iniciar a puxada",
@@ -150,6 +156,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Remada Curvada com Barra",
         englishName: "Barbell Row",
+        imgUrl: "https://wger.de/media/exercise-images/109/Barbell-rear-delt-row-1.png",
         muscles: ["Dorsal", "Rombóide", "Bíceps", "Posterior de ombro"],
         cues: [
           "Tronco a 45°, coluna neutra durante todo o movimento",
@@ -168,6 +175,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Puxada na Polia (pegada neutra)",
         englishName: "Lat Pulldown",
+        imgUrl: "https://wger.de/media/exercise-images/158/02e8a7c3-dc67-434e-a4bc-77fdecf84b49.webp",
         muscles: ["Dorsal", "Bíceps"],
         cues: [
           "Cotovelos apontam para o chão na descida",
@@ -186,6 +194,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Remada Unilateral com Halter",
         englishName: "Dumbbell Row",
+        imgUrl: "https://wger.de/media/exercise-images/81/a751a438-ae2d-4751-8d61-cef0e9292174.png",
         muscles: ["Dorsal", "Bíceps"],
         cues: [
           "Apoio firme no banco — costas planas",
@@ -204,6 +213,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Rosca com Barra EZ",
         englishName: "Barbell Curl",
+        imgUrl: "https://wger.de/media/exercise-images/94/6dee2f60-aea2-4f2d-9bf6-aef50c4f9483.png",
         muscles: ["Bíceps", "Braquial"],
         cues: [
           "Cotovelos fixos ao lado do tronco — não deixe abrirem",
@@ -250,6 +260,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Agachamento Livre com Barra",
         englishName: "Barbell Squat",
+        imgUrl: "https://wger.de/media/exercise-images/1801/60043328-1cfb-4289-9865-aaf64d5aaa28.jpg",
         muscles: ["Quadríceps", "Glúteo", "Posteriores da coxa", "Core"],
         cues: [
           "Profundidade total — coxa paralela ou abaixo do joelho",
@@ -268,6 +279,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Leg Press 45°",
         englishName: "Leg Press",
+        imgUrl: "https://wger.de/media/exercise-images/371/d2136f96-3a43-4d4c-9944-1919c4ca1ce1.webp",
         muscles: ["Quadríceps", "Glúteo"],
         cues: [
           "Não trancar os joelhos no topo do movimento",
@@ -286,6 +298,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Cadeira Extensora",
         englishName: "Leg Extension",
+        imgUrl: "https://wger.de/media/exercise-images/369/78c915d1-e46d-4d30-8124-65d68664c3ef.png",
         muscles: ["Quadríceps"],
         cues: [
           "Isometria de 2 segundos no topo — segure a contração",
@@ -304,6 +317,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Stiff com Halteres",
         englishName: "Romanian Deadlift",
+        imgUrl: "https://wger.de/media/exercise-images/1652/0306c8c0-70cc-45d4-92de-6fa72ceaa834.webp",
         muscles: ["Posteriores da coxa", "Glúteo", "Lombar"],
         cues: [
           "Coluna neutra em toda a descida — não arredondar",
@@ -322,6 +336,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Cadeira Flexora",
         englishName: "Leg Curl",
+        imgUrl: "https://wger.de/media/exercise-images/364/b318dde9-f5f2-489f-940a-cd864affb9e3.png",
         muscles: ["Posteriores da coxa"],
         cues: [
           "Excêntrico lento de 3 segundos na volta",
@@ -340,6 +355,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Panturrilha em Pé",
         englishName: "Standing Calf Raise",
+        imgUrl: "https://wger.de/media/exercise-images/1243/53d4fabe-c994-4907-873f-8d82813a9832.png",
         muscles: ["Gastrocnêmio", "Sóleo"],
         cues: [
           "Descer abaixo do nível da plataforma para alongamento total",
@@ -368,6 +384,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Supino Reto com Barra",
         englishName: "Bench Press",
+        imgUrl: "https://wger.de/media/exercise-images/192/Bench-press-1.png",
         muscles: ["Peito", "Deltóide anterior", "Tríceps"],
         cues: [
           "Escápulas retraídas e deprimidas — não perca essa tensão",
@@ -386,6 +403,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Remada na Polia Baixa",
         englishName: "Seated Cable Row",
+        imgUrl: "https://wger.de/media/exercise-images/1117/e74255c0-67a0-4309-b78d-2d79e6ff8c11.png",
         muscles: ["Dorsal", "Rombóide", "Bíceps"],
         cues: [
           "Puxar até o abdômen com cotovelos junto ao tronco",
@@ -404,6 +422,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Desenvolvimento Militar (em pé)",
         englishName: "Standing Barbell Overhead Press",
+        imgUrl: "https://wger.de/media/exercise-images/418/fa2a2207-43cb-4dc0-bc2a-039e32544790.png",
         muscles: ["Deltóide", "Tríceps", "Core"],
         cues: [
           "Glúteos e core contraídos — não arqueie a lombar",
@@ -422,6 +441,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Puxada na Polia",
         englishName: "Lat Pulldown",
+        imgUrl: "https://wger.de/media/exercise-images/158/02e8a7c3-dc67-434e-a4bc-77fdecf84b49.webp",
         muscles: ["Dorsal", "Bíceps"],
         cues: [
           "Amplitude completa — braços quase estendidos no topo",
@@ -440,6 +460,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Tríceps Testa com Barra EZ",
         englishName: "Triceps Extension",
+        imgUrl: "https://wger.de/media/exercise-images/50/695ced5c-9961-4076-add2-cb250d01089e.png",
         muscles: ["Tríceps"],
         cues: [
           "Cotovelos apontam para o teto — fixos durante o movimento",
@@ -486,6 +507,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Hip Thrust com Barra",
         englishName: "Hip Thrust",
+        imgUrl: "https://wger.de/media/exercise-images/1642/a81ad922-caf5-47f8-99b4-640cb0717436.webp",
         muscles: ["Glúteo", "Posteriores da coxa", "Core"],
         cues: [
           "Escápulas apoiadas no banco, queixo para baixo — não olhe para cima",
@@ -504,6 +526,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Agachamento Búlgaro",
         englishName: "Bulgarian Split Squat",
+        imgUrl: "https://wger.de/media/exercise-images/988/6283b258-a4d7-4833-84f7-a38987022d3d.png",
         muscles: ["Glúteo", "Quadríceps", "Posteriores da coxa"],
         cues: [
           "Pé dianteiro suficientemente à frente para ativar o glúteo",
@@ -540,6 +563,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Stiff Unilateral com Halter",
         englishName: "Single Leg Romanian Deadlift",
+        imgUrl: "https://wger.de/media/exercise-images/1652/0306c8c0-70cc-45d4-92de-6fa72ceaa834.webp",
         muscles: ["Posteriores da coxa", "Glúteo", "Core"],
         cues: [
           "Quadril e ombro descem juntos — corpo forma um T",
@@ -558,6 +582,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Flexão de Joelho (cadeira flexora)",
         englishName: "Leg Curl",
+        imgUrl: "https://wger.de/media/exercise-images/364/b318dde9-f5f2-489f-940a-cd864affb9e3.png",
         muscles: ["Posteriores da coxa"],
         cues: [
           "Excêntrico lento de 3 segundos — não deixe cair",
@@ -605,6 +630,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Supino Reto com Barra",
         englishName: "Bench Press",
+        imgUrl: "https://wger.de/media/exercise-images/192/Bench-press-1.png",
         muscles: ["Peito", "Deltóide anterior", "Tríceps"],
         cues: [
           "Escápulas retraídas e deprimidas no banco",
@@ -623,6 +649,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Remada Curvada com Barra",
         englishName: "Barbell Row",
+        imgUrl: "https://wger.de/media/exercise-images/109/Barbell-rear-delt-row-1.png",
         muscles: ["Dorsal", "Rombóide", "Bíceps"],
         cues: [
           "Tronco a 45°, coluna neutra",
@@ -641,6 +668,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Desenvolvimento com Halteres",
         englishName: "Dumbbell Shoulder Press",
+        imgUrl: "https://wger.de/media/exercise-images/97/Dumbbell-bench-press-1.png",
         muscles: ["Deltóide", "Tríceps"],
         cues: [
           "Coluna neutra — não arqueie a lombar",
@@ -659,6 +687,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Puxada na Polia",
         englishName: "Lat Pulldown",
+        imgUrl: "https://wger.de/media/exercise-images/158/02e8a7c3-dc67-434e-a4bc-77fdecf84b49.webp",
         muscles: ["Dorsal", "Bíceps"],
         cues: [
           "Amplitude completa — braços quase estendidos no topo",
@@ -677,6 +706,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Rosca Direta + Tríceps Corda",
         englishName: "Barbell Curl",
+        imgUrl: "https://wger.de/media/exercise-images/94/6dee2f60-aea2-4f2d-9bf6-aef50c4f9483.png",
         muscles: ["Bíceps", "Tríceps"],
         cues: [
           "Bi-set: fazer rosca e tríceps sem pausa entre eles",
@@ -705,6 +735,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Agachamento Livre com Barra",
         englishName: "Barbell Squat",
+        imgUrl: "https://wger.de/media/exercise-images/1801/60043328-1cfb-4289-9865-aaf64d5aaa28.jpg",
         muscles: ["Quadríceps", "Glúteo", "Posteriores da coxa", "Core"],
         cues: [
           "Profundidade total com lordose preservada",
@@ -723,6 +754,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Stiff com Barra",
         englishName: "Romanian Deadlift",
+        imgUrl: "https://wger.de/media/exercise-images/1652/0306c8c0-70cc-45d4-92de-6fa72ceaa834.webp",
         muscles: ["Posteriores da coxa", "Glúteo", "Lombar"],
         cues: [
           "Coluna neutra — não arredondar a lombar",
@@ -741,6 +773,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Leg Press 45°",
         englishName: "Leg Press",
+        imgUrl: "https://wger.de/media/exercise-images/371/d2136f96-3a43-4d4c-9944-1919c4ca1ce1.webp",
         muscles: ["Quadríceps", "Glúteo"],
         cues: [
           "Joelhos não travam no topo",
@@ -759,6 +792,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Cadeira Flexora",
         englishName: "Leg Curl",
+        imgUrl: "https://wger.de/media/exercise-images/364/b318dde9-f5f2-489f-940a-cd864affb9e3.png",
         muscles: ["Posteriores da coxa"],
         cues: [
           "Excêntrico lento de 3 segundos",
@@ -777,6 +811,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Panturrilha em Pé",
         englishName: "Standing Calf Raise",
+        imgUrl: "https://wger.de/media/exercise-images/1243/53d4fabe-c994-4907-873f-8d82813a9832.png",
         muscles: ["Gastrocnêmio", "Sóleo"],
         cues: [
           "Amplitude total — descer abaixo da plataforma",
@@ -806,6 +841,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Agachamento Livre (ou Goblet)",
         englishName: "Goblet Squat",
+        imgUrl: "https://wger.de/media/exercise-images/203/1c052351-2af0-4227-aeb0-244008e4b0a8.jpeg",
         muscles: ["Quadríceps", "Glúteo", "Core"],
         cues: [
           "Sem barra? Segure um halter junto ao peito (goblet)",
@@ -824,6 +860,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Supino Reto (barra, halter ou flexão)",
         englishName: "Bench Press",
+        imgUrl: "https://wger.de/media/exercise-images/192/Bench-press-1.png",
         muscles: ["Peito", "Deltóide anterior", "Tríceps"],
         cues: [
           "Adapte ao equipamento disponível",
@@ -842,6 +879,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Remada Curvada (ou na máquina)",
         englishName: "Barbell Row",
+        imgUrl: "https://wger.de/media/exercise-images/109/Barbell-rear-delt-row-1.png",
         muscles: ["Dorsal", "Bíceps"],
         cues: [
           "Equilíbrio entre empurrar e puxar",
@@ -860,6 +898,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Desenvolvimento de Ombro",
         englishName: "Dumbbell Shoulder Press",
+        imgUrl: "https://wger.de/media/exercise-images/97/Dumbbell-bench-press-1.png",
         muscles: ["Deltóide", "Tríceps"],
         cues: [
           "Halteres ou máquina conforme disponível",
@@ -878,6 +917,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Prancha",
         englishName: "Plank",
+        imgUrl: "https://wger.de/media/exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png",
         muscles: ["Core", "Estabilizadores"],
         cues: [
           "Corpo em linha reta da cabeça ao calcanhar",
@@ -906,6 +946,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Levantamento Terra (ou Stiff)",
         englishName: "Deadlift",
+        imgUrl: "https://wger.de/media/exercise-images/184/1709c405-620a-4d07-9658-fade2b66a2df.jpeg",
         muscles: ["Posteriores da coxa", "Glúteo", "Lombar", "Dorsal", "Core"],
         cues: [
           "Coluna neutra em toda a amplitude — não arredondar",
@@ -924,6 +965,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Barra Fixa (ou Puxada)",
         englishName: "Pull-up",
+        imgUrl: "https://wger.de/media/exercise-images/475/b0554016-16fd-4dbe-be47-a2a17d16ae0e.jpg",
         muscles: ["Dorsal", "Bíceps"],
         cues: [
           "Sem barra fixa? Use puxada na polia ou remada com elástico",
@@ -942,6 +984,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Leg Press (ou Afundo)",
         englishName: "Leg Press",
+        imgUrl: "https://wger.de/media/exercise-images/371/d2136f96-3a43-4d4c-9944-1919c4ca1ce1.webp",
         muscles: ["Quadríceps", "Glúteo"],
         cues: [
           "Amplitude controlada — não trancar os joelhos",
@@ -960,6 +1003,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Desenvolvimento com Halteres",
         englishName: "Dumbbell Shoulder Press",
+        imgUrl: "https://wger.de/media/exercise-images/97/Dumbbell-bench-press-1.png",
         muscles: ["Deltóide", "Tríceps"],
         cues: [
           "Coluna neutra, sem hiperextender",
@@ -978,6 +1022,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Rosca + Abdominal",
         englishName: "Barbell Curl",
+        imgUrl: "https://wger.de/media/exercise-images/94/6dee2f60-aea2-4f2d-9bf6-aef50c4f9483.png",
         muscles: ["Bíceps", "Core"],
         cues: [
           "Bi-set: rosca e abdominal sem pausa entre eles",
@@ -1006,6 +1051,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Agachamento Búlgaro",
         englishName: "Bulgarian Split Squat",
+        imgUrl: "https://wger.de/media/exercise-images/988/6283b258-a4d7-4833-84f7-a38987022d3d.png",
         muscles: ["Glúteo", "Quadríceps"],
         cues: [
           "Pé dianteiro à frente para ativar o glúteo",
@@ -1024,6 +1070,7 @@ export const DIAS = {
         category: "PRINCIPAL",
         name: "Supino Inclinado (ou flexão inclinada)",
         englishName: "Incline Bench Press",
+        imgUrl: "https://wger.de/media/exercise-images/41/Incline-bench-press-1.png",
         muscles: ["Peito superior", "Deltóide anterior", "Tríceps"],
         cues: [
           "Banco a 30°–45° — mais inclinado recruta mais ombro",
@@ -1042,6 +1089,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Remada Unilateral com Halter",
         englishName: "Dumbbell Row",
+        imgUrl: "https://wger.de/media/exercise-images/81/a751a438-ae2d-4751-8d61-cef0e9292174.png",
         muscles: ["Dorsal", "Bíceps"],
         cues: [
           "Amplitude máxima — deixar o halter descer bem",
@@ -1060,6 +1108,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Elevação Lateral",
         englishName: "Lateral Raise",
+        imgUrl: "https://wger.de/media/exercise-images/148/lateral-dumbbell-raises-large-2.png",
         muscles: ["Deltóide medial"],
         cues: [
           "Carga leve com controle total",
@@ -1078,6 +1127,7 @@ export const DIAS = {
         category: "ACESSÓRIO",
         name: "Panturrilha + Prancha Lateral",
         englishName: "Standing Calf Raise",
+        imgUrl: "https://wger.de/media/exercise-images/1243/53d4fabe-c994-4907-873f-8d82813a9832.png",
         muscles: ["Gastrocnêmio", "Core lateral"],
         cues: [
           "Bi-set: panturrilha e prancha lateral sem pausa entre eles",
