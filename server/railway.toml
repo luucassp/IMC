@@ -3,6 +3,6 @@ builder = "nixpacks"
 buildCommand = "npm install && npm run build"
 
 [deploy]
-startCommand = "npx prisma migrate deploy && node dist/main"
+startCommand = "npx prisma db push --accept-data-loss && node dist/main"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
