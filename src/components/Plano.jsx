@@ -137,10 +137,16 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
           <button
             type="button"
             onClick={onVoltar}
-            style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 13, padding: 0, marginBottom: 12 }}
+            style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 13, padding: 0, marginBottom: 16 }}
           >
             ← Voltar ao resultado
           </button>
+          <div style={{ marginBottom: 4 }}>
+            <span style={{ fontSize: 13, color: "#555" }}>
+              {(() => { const h = new Date().getHours(); return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; })()},
+            </span>{" "}
+            <span style={{ fontSize: 13, color: "#888", fontWeight: 600 }}>{perfil.nome.split(" ")[0]}</span>
+          </div>
           <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
             {recomendacao.enfase}
           </span>
@@ -196,7 +202,7 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
                     background: activeDay === d.id ? d.color : "#141414",
                     color: activeDay === d.id ? "#000" : "#666",
                     border: activeDay === d.id ? "none" : "1px solid #222",
-                    borderRadius: 6,
+                    borderRadius: 999,
                     padding: "8px 14px",
                     fontSize: 12,
                     fontFamily: "monospace",
@@ -255,6 +261,34 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
                 </div>
               )}
             </div>
+
+            {/* CTA principal do dia */}
+            <button
+              type="button"
+              onClick={concluirTreino}
+              disabled={feitoHoje}
+              style={{
+                width: "100%",
+                marginBottom: 20,
+                background: feitoHoje ? "#141414" : currentDay.color,
+                color: feitoHoje ? "#5a5" : "#000",
+                border: feitoHoje ? "1px solid #2a3a2a" : "none",
+                borderRadius: 999,
+                padding: "16px 20px",
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: feitoHoje ? "default" : "pointer",
+                letterSpacing: 0.5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+              }}
+            >
+              {feitoHoje
+                ? `✓ ${currentDay.label} concluído hoje`
+                : <><span style={{ fontSize: 18 }}>▶</span> Iniciar {currentDay.label}</>}
+            </button>
 
             {/* Exercícios */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -316,26 +350,6 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
               })}
             </div>
 
-            <button
-              type="button"
-              onClick={concluirTreino}
-              disabled={feitoHoje}
-              style={{
-                width: "100%",
-                marginTop: 20,
-                background: feitoHoje ? "#141414" : currentDay.color,
-                color: feitoHoje ? "#5a5" : "#000",
-                border: feitoHoje ? "1px solid #2a3a2a" : "none",
-                borderRadius: 8,
-                padding: "15px 20px",
-                fontSize: 15,
-                fontWeight: 700,
-                cursor: feitoHoje ? "default" : "pointer",
-                letterSpacing: 0.5,
-              }}
-            >
-              {feitoHoje ? `✓ ${currentDay.label} concluído hoje` : `Marcar ${currentDay.label} como concluído`}
-            </button>
           </>
         )}
 
@@ -462,14 +476,21 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
             <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, letterSpacing: -0.5 }}>Evolução</h2>
             <p style={{ fontSize: 13, color: "#555", marginBottom: 24, fontFamily: "monospace" }}>Consistência, cargas e histórico</p>
 
-            <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
-              <div style={{ flex: 1, background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 8, padding: "16px 18px" }}>
-                <div style={{ fontSize: 28, fontWeight: 700, color: accent }}>{ultimos7}</div>
-                <div style={{ fontSize: 12, color: "#666", fontFamily: "monospace", marginTop: 2 }}>nos últimos 7 dias</div>
+            <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
+              <div style={{ flex: 1, background: "#0f0f0f", border: `1px solid ${accent}30`, borderRadius: 12, padding: "18px 16px" }}>
+                <div style={{ fontSize: 11, color: "#555", fontFamily: "monospace", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Última semana</div>
+                <div style={{ fontSize: 40, fontWeight: 700, color: accent, lineHeight: 1 }}>{ultimos7}</div>
+                <div style={{ fontSize: 11, color: "#666", fontFamily: "monospace", marginTop: 4 }}>treinos</div>
               </div>
-              <div style={{ flex: 1, background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 8, padding: "16px 18px" }}>
-                <div style={{ fontSize: 28, fontWeight: 700, color: "#e8e4dc" }}>{total}</div>
-                <div style={{ fontSize: 12, color: "#666", fontFamily: "monospace", marginTop: 2 }}>no total</div>
+              <div style={{ flex: 1, background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 12, padding: "18px 16px" }}>
+                <div style={{ fontSize: 11, color: "#555", fontFamily: "monospace", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Total</div>
+                <div style={{ fontSize: 40, fontWeight: 700, color: "#e8e4dc", lineHeight: 1 }}>{total}</div>
+                <div style={{ fontSize: 11, color: "#666", fontFamily: "monospace", marginTop: 4 }}>sessões</div>
+              </div>
+              <div style={{ flex: 1, background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 12, padding: "18px 16px" }}>
+                <div style={{ fontSize: 11, color: "#555", fontFamily: "monospace", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Semanas</div>
+                <div style={{ fontSize: 40, fontWeight: 700, color: "#888", lineHeight: 1 }}>{freqSemana.length}</div>
+                <div style={{ fontSize: 11, color: "#666", fontFamily: "monospace", marginTop: 4 }}>ativas</div>
               </div>
             </div>
 
