@@ -4,8 +4,10 @@ import { api } from "../lib/api.js";
 import { parseDescanso } from "../lib/tempo.js";
 import { NIVEIS_FADIGA, ajustarExercicios } from "../lib/fadiga.js";
 import { planejarSemana } from "../lib/semana.js";
+import { buscarImagemExercicio } from "../lib/wger.js";
 import RestTimer from "./RestTimer.jsx";
 import MiniGrafico from "./MiniGrafico.jsx";
+import GuidedWorkout from "./GuidedWorkout.jsx";
 
 const accent = "#c8ff00";
 
@@ -24,6 +26,36 @@ const STATUS_SEMANA = {
   proximo: { label: "próximo", cor: "#555" },
   descanso: { label: "descanso", cor: "#333" },
 };
+
+// Card expandido de exercício: mostra imagem do wger.de, músculos e cues.
+function ExercicioExpandido({ ex, cor }) {
+  const [imgUrl, setImgUrl] = useState(null);
+
+  useEffect(() => {
+    if (ex.englishName) buscarImagemExercicio(ex.englishName).then(setImgUrl);
+  }, [ex.englishName]);
+
+  return (
+    <>
+      {ex.muscles && (
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12, marginBottom: 12 }}>
+          {ex.muscles.map((m) => (
+            <span key={m} style={{ background: `${cor}18`, border: `1px solid ${cor}30`, color: cor, borderRadius: 99, padding: "3px 10px", fontSize: 11, fontFamily: "monospace" }}>
+              {m}
+            </span>
+          ))}
+        </div>
+      )}
+      {imgUrl && (
+        <img
+          src={imgUrl}
+          alt={ex.name}
+          style={{ width: "100%", maxHeight: 200, objectFit: "contain", background: "#111", borderRadius: 8, marginBottom: 12 }}
+        />
+      )}
+    </>
+  );
+}
 
 // Inputs de carga × reps de uma série, com feedback da última registrada.
 function LogCarga({ exercicio, cor, ultima, onRegistrar }) {
@@ -66,8 +98,10 @@ function LogCarga({ exercicio, cor, ultima, onRegistrar }) {
 
 export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) {
   const { days, schedule, semAcademia } = plano;
+  const nivel = perfil.nivel || "iniciante";
   const [activeDay, setActiveDay] = useState(days[0]?.id);
   const [expandedExercise, setExpandedExercise] = useState(null);
+  const [guidedMode, setGuidedMode] = useState(false);
   const [tab, setTab] = useState("treino");
   const [historico, setHistorico] = useState([]);
   const [registros, setRegistros] = useState([]);
@@ -124,8 +158,15 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
   const exSelecionado = exGrafico || exercicios[0] || "";
   const dadosCarga = dashboard?.progressao?.[exSelecionado] ?? [];
 
+  // Achata a prescrição pelo nível do usuário antes de ajustar por fadiga.
+  function aplanarNivel(ex) {
+    const p = ex.prescricao?.[nivel] || ex.prescricao?.intermediario;
+    if (!p) return ex;
+    return { ...ex, sets: String(p.sets), reps: p.reps, rest: `${p.rest} s` };
+  }
+
   // Ajuste de intensidade do dia e planejamento da semana.
-  const exerciciosDoDia = ajustarExercicios(currentDay.exercises, fadiga);
+  const exerciciosDoDia = ajustarExercicios(currentDay.exercises.map(aplanarNivel), fadiga);
   const dicaFadiga = NIVEIS_FADIGA.find((n) => n.id === fadiga);
   const planejamento = planejarSemana(schedule, historico);
 
@@ -153,9 +194,15 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
           <h1 style={{ fontSize: 26, fontWeight: 700, margin: "4px 0 4px", letterSpacing: -1, lineHeight: 1.1 }}>
             Seu Plano — <span style={{ color: accent }}>{plano.divisao}</span>
           </h1>
-          <p style={{ fontSize: 13, color: "#666", margin: "0 0 16px", fontFamily: "monospace" }}>
-            {perfil.peso} kg · {perfil.altura} cm · {recomendacao.dias}x/semana · {recomendacao.volume}
+          <p style={{ fontSize: 13, color: "#666", margin: "0 0 8px", fontFamily: "monospace" }}>
+            {perfil.peso} kg · {perfil.altura} cm · {recomendacao.dias}x/semana
           </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+            <span style={{ background: `${accent}20`, border: `1px solid ${accent}40`, color: accent, borderRadius: 99, padding: "2px 10px", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, textTransform: "uppercase" }}>
+              {nivel}
+            </span>
+            <span style={{ fontFamily: "monospace", fontSize: 11, color: "#444" }}>{recomendacao.volume}</span>
+          </div>
 
           {semAcademia && (
             <div style={{ background: "#FF6B3510", border: "1px solid #FF6B3530", borderRadius: 8, padding: "10px 14px", marginBottom: 16, fontSize: 12, color: "#cda", lineHeight: 1.5 }}>
@@ -265,7 +312,7 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
             {/* CTA principal do dia */}
             <button
               type="button"
-              onClick={concluirTreino}
+              onClick={feitoHoje ? undefined : () => setGuidedMode(true)}
               disabled={feitoHoje}
               style={{
                 width: "100%",
@@ -287,7 +334,7 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
             >
               {feitoHoje
                 ? `✓ ${currentDay.label} concluído hoje`
-                : <><span style={{ fontSize: 18 }}>▶</span> Iniciar {currentDay.label}</>}
+                : <><span style={{ fontSize: 18 }}>▶</span> Iniciar treino guiado</>}
             </button>
 
             {/* Exercícios */}
@@ -309,7 +356,11 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
 
                     {isOpen && (
                       <div style={{ padding: "0 16px 16px", borderTop: "1px solid #1a1a1a" }}>
-                        <div style={{ display: "flex", gap: 16, marginTop: 12, marginBottom: 12, flexWrap: "wrap" }}>
+                        {/* Imagem wger.de + músculos */}
+                        <ExercicioExpandido ex={ex} cor={currentDay.color} />
+
+                        {/* Prescrição */}
+                        <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
                           {[["SÉRIES", ex.sets, ex.ajusteSets], ["REPS", ex.reps], ["DESCANSO", ex.rest]].map(([label, val, ajuste]) => (
                             <div key={label} style={{ background: "#1a1a1a", borderRadius: 6, padding: "8px 12px" }}>
                               <div style={{ fontFamily: "monospace", fontSize: 9, color: "#555", letterSpacing: 2 }}>{label}</div>
@@ -324,15 +375,29 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
                             </div>
                           ))}
                         </div>
-                        <div style={{ fontSize: 13, color: "#888", lineHeight: 1.6, marginBottom: 10 }}>{ex.note}</div>
-                        <div style={{ background: `${currentDay.color}15`, border: `1px solid ${currentDay.color}30`, borderRadius: 6, padding: "8px 12px", fontFamily: "monospace", fontSize: 11, color: currentDay.color, letterSpacing: 0.5 }}>
+
+                        {/* Cues de técnica */}
+                        {ex.cues && (
+                          <div style={{ background: `${currentDay.color}10`, border: `1px solid ${currentDay.color}20`, borderRadius: 8, padding: "10px 12px", marginBottom: 10 }}>
+                            <div style={{ fontFamily: "monospace", fontSize: 9, color: currentDay.color, letterSpacing: 2, marginBottom: 8 }}>TÉCNICA</div>
+                            {ex.cues.map((cue, ci) => (
+                              <div key={ci} style={{ display: "flex", gap: 8, marginBottom: ci < ex.cues.length - 1 ? 6 : 0 }}>
+                                <span style={{ color: currentDay.color, fontFamily: "monospace", fontSize: 11, flexShrink: 0 }}>{ci + 1}.</span>
+                                <span style={{ fontSize: 13, color: "#999", lineHeight: 1.5 }}>{cue}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div style={{ fontSize: 13, color: "#666", lineHeight: 1.6, marginBottom: 10 }}>{ex.note}</div>
+                        <div style={{ background: `${currentDay.color}15`, border: `1px solid ${currentDay.color}30`, borderRadius: 6, padding: "8px 12px", fontFamily: "monospace", fontSize: 11, color: currentDay.color, letterSpacing: 0.5, marginBottom: 10 }}>
                           ↑ PROGRESSÃO: {ex.progression}
                         </div>
 
                         <button
                           type="button"
                           onClick={() => iniciarDescanso(ex.rest)}
-                          style={{ marginTop: 10, background: "none", border: `1px solid ${currentDay.color}40`, color: currentDay.color, borderRadius: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                          style={{ background: "none", border: `1px solid ${currentDay.color}40`, color: currentDay.color, borderRadius: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
                         >
                           ⏱ Iniciar descanso ({ex.rest})
                         </button>
@@ -549,6 +614,16 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
 
       {descanso && (
         <RestTimer segundos={descanso.segundos} chave={descanso.chave} onFechar={() => setDescanso(null)} />
+      )}
+
+      {guidedMode && (
+        <GuidedWorkout
+          exercicios={exerciciosDoDia}
+          nivel={nivel}
+          cor={currentDay.color}
+          onConcluir={() => { setGuidedMode(false); concluirTreino(); }}
+          onSair={() => setGuidedMode(false)}
+        />
       )}
     </div>
   );
