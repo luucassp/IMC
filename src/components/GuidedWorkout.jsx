@@ -10,9 +10,9 @@ export default function GuidedWorkout({ exercicios, nivel, cor, onConcluir, onSa
   const [serieAtual, setSerieAtual] = useState(1);
   const [fase, setFase] = useState("exercicio"); // "exercicio" | "descanso" | "concluido"
   const [tempoRestante, setTempoRestante] = useState(0);
-  const imagemUrl = ex?.imgUrl ?? null;
 
   const ex = exercicios[exIdx];
+  const imagemUrl = ex?.imgUrl ?? null;
   const prescricao = ex?.prescricao?.[nivel] || { sets: parseInt(ex?.sets) || 3, reps: ex?.reps || "10–12", rest: 75 };
   const totalSeries = prescricao.sets;
   const totalExercicios = exercicios.length;
@@ -54,24 +54,47 @@ export default function GuidedWorkout({ exercicios, nivel, cor, onConcluir, onSa
   // ── Tela concluído ─────────────────────────────────────────────────────────
   if (fase === "concluido") {
     return (
-      <div style={{ position: "fixed", inset: 0, background: "#0a0a0a", zIndex: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, textAlign: "center" }}>
-        <div style={{ fontSize: 72, marginBottom: 8 }}>🏆</div>
-        <h2 style={{ fontSize: 28, fontWeight: 700, color: cor, margin: "0 0 8px", letterSpacing: -1 }}>Treino concluído!</h2>
-        <p style={{ color: "#555", fontFamily: "monospace", fontSize: 13, marginBottom: 8 }}>
+      <div style={{
+        position: "fixed", inset: 0,
+        background: `radial-gradient(ellipse 100% 80% at 50% 30%, ${cor}15 0%, #080808 60%)`,
+        zIndex: 200,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        padding: 32, textAlign: "center",
+        animation: "fadeIn 0.4s ease both",
+      }}>
+        <div style={{ fontSize: 80, marginBottom: 0, animation: "scaleIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.1s both" }}>🏆</div>
+        <h2 style={{
+          fontSize: "clamp(36px, 10vw, 56px)",
+          fontWeight: 900,
+          color: cor,
+          margin: "16px 0 8px",
+          letterSpacing: -2,
+          lineHeight: 1,
+          textShadow: `0 0 40px ${cor}60`,
+          animation: "fadeUp 0.5s ease 0.25s both",
+        }}>
+          Treino concluído!
+        </h2>
+        <p style={{ color: "#555", fontFamily: "monospace", fontSize: 13, marginBottom: 8, animation: "fadeUp 0.5s ease 0.35s both" }}>
           {totalExercicios} exercícios · {totalSetsGeral} séries
         </p>
-        <p style={{ color: "#888", fontSize: 14, marginBottom: 40, lineHeight: 1.6 }}>
-          Ótimo trabalho — consistência é o segredo.
+        <p style={{ color: "#888", fontSize: 15, marginBottom: 48, lineHeight: 1.6, animation: "fadeUp 0.5s ease 0.4s both" }}>
+          Consistência é o segredo. Mais um treino pra história.
         </p>
         <button
           onClick={onConcluir}
-          style={{ background: cor, color: "#000", border: "none", borderRadius: 999, padding: "18px 48px", fontSize: 16, fontWeight: 700, cursor: "pointer", letterSpacing: 0.5 }}
+          style={{
+            background: cor, color: "#000", border: "none", borderRadius: 999,
+            padding: "20px 56px", fontSize: 17, fontWeight: 800, cursor: "pointer", letterSpacing: 0.5,
+            boxShadow: `0 0 32px ${cor}50, 0 4px 16px rgba(0,0,0,0.5)`,
+            animation: "fadeUp 0.5s ease 0.5s both",
+          }}
         >
           Registrar treino
         </button>
         <button
           onClick={onSair}
-          style={{ marginTop: 16, background: "none", border: "none", color: "#444", fontSize: 13, cursor: "pointer" }}
+          style={{ marginTop: 16, background: "none", border: "none", color: "#444", fontSize: 13, cursor: "pointer", animation: "fadeUp 0.5s ease 0.55s both" }}
         >
           Sair sem registrar
         </button>
@@ -90,7 +113,13 @@ export default function GuidedWorkout({ exercicios, nivel, cor, onConcluir, onSa
       : `Série ${serieAtual + 1}/${totalSeries} de ${ex.name}`;
 
     return (
-      <div style={{ position: "fixed", inset: 0, background: "#0a0a0a", zIndex: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, textAlign: "center" }}>
+      <div style={{
+        position: "fixed", inset: 0,
+        background: `radial-gradient(circle 280px at 50% 45%, ${cor}08 0%, transparent 70%), #080808`,
+        zIndex: 200,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        padding: 32, textAlign: "center",
+      }}>
         {/* Barra de progresso */}
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 3, background: "#1a1a1a" }}>
           <div style={{ height: "100%", background: cor, width: `${progresso}%`, transition: "width 0.4s" }} />
@@ -158,7 +187,15 @@ export default function GuidedWorkout({ exercicios, nivel, cor, onConcluir, onSa
 
       <div style={{ padding: "16px 20px 120px", maxWidth: 540, margin: "0 auto" }}>
         {/* Nome e categoria */}
-        <h2 style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.5, lineHeight: 1.2, margin: "0 0 4px", color: "#f0ece4" }}>
+        <h2 style={{
+          fontSize: "clamp(28px, 7vw, 44px)",
+          fontWeight: 900,
+          letterSpacing: -1,
+          lineHeight: 1.1,
+          margin: "0 0 4px",
+          color: "#f0ece4",
+          animation: "fadeUp 0.3s ease both",
+        }}>
           {ex.name}
         </h2>
         <div style={{ fontFamily: "monospace", fontSize: 10, color: ex.category === "PRINCIPAL" ? cor : "#444", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>
@@ -191,7 +228,15 @@ export default function GuidedWorkout({ exercicios, nivel, cor, onConcluir, onSa
         {/* Prescrição da série */}
         <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
           {[["SÉRIES", `${serieAtual}/${totalSeries}`], ["REPS", prescricao.reps], ["DESCANSO", `${prescricao.rest}s`]].map(([label, val]) => (
-            <div key={label} style={{ flex: 1, background: "#111", border: "1px solid #1e1e1e", borderRadius: 10, padding: "12px 8px", textAlign: "center" }}>
+            <div key={label} style={{
+              flex: 1,
+              background: "linear-gradient(145deg, #111318 0%, #0d0d0f 100%)",
+              border: "1px solid rgba(255,255,255,0.04)",
+              borderRadius: 10,
+              padding: "12px 8px",
+              textAlign: "center",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+            }}>
               <div style={{ fontFamily: "monospace", fontSize: 9, color: "#555", letterSpacing: 2, marginBottom: 4 }}>{label}</div>
               <div style={{ fontFamily: "monospace", fontSize: 16, fontWeight: 700, color: "#f0ece4" }}>{val}</div>
             </div>
@@ -223,7 +268,12 @@ export default function GuidedWorkout({ exercicios, nivel, cor, onConcluir, onSa
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "16px 20px 32px", background: "linear-gradient(to top, #0a0a0a 70%, transparent)", zIndex: 202 }}>
         <button
           onClick={concluirSerie}
-          style={{ width: "100%", background: cor, color: "#000", border: "none", borderRadius: 999, padding: "18px 20px", fontSize: 16, fontWeight: 700, cursor: "pointer", letterSpacing: 0.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+          style={{
+            width: "100%", background: cor, color: "#000", border: "none", borderRadius: 999,
+            padding: "18px 20px", fontSize: 16, fontWeight: 800, cursor: "pointer", letterSpacing: 0.5,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            boxShadow: `0 0 24px ${cor}40, 0 4px 16px rgba(0,0,0,0.5)`,
+          }}
         >
           <span>✓</span>
           <span>
