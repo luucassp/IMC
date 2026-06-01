@@ -4,6 +4,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { PerfilModule } from './perfil/perfil.module';
 import { TreinoModule } from './treino/treino.module';
+import { IaModule } from './ia/ia.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { TreinoModule } from './treino/treino.module';
     AuthModule,
     PerfilModule,
     TreinoModule,
+    IaModule,
   ],
 })
 export class AppModule {}

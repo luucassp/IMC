@@ -33,4 +33,5 @@ export const api = {
   getRegistros: (token) => request("/registros", { token }),
   addRegistro: (token, entrada) => request("/registros", { method: "POST", token, body: entrada }),
   getDashboard: (token) => request("/dashboard", { token }),
+  gerarTreinoIA: (token, dto) => request("/ia/treino", { method: "POST", token, body: dto }),
 };

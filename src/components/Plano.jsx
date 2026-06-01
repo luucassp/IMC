@@ -110,6 +110,8 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
   const [descanso, setDescanso] = useState(null); // { segundos, chave }
   const [exGrafico, setExGrafico] = useState("");
   const [fadiga, setFadiga] = useState("normal");
+  const [iaExercicios, setIaExercicios] = useState(null); // null = plano base, [] = IA carregando, array = IA pronto
+  const [iaErro, setIaErro] = useState("");
 
   // Carrega histórico, registros e dashboard (agregado no servidor) ao montar.
   useEffect(() => {
@@ -166,9 +168,37 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
     return { ...ex, sets: String(p.sets), reps: p.reps, rest: `${p.rest} s` };
   }
 
+  const gerarComIA = async () => {
+    setIaErro("");
+    setIaExercicios([]); // sinaliza carregando
+    try {
+      const resultado = await api.gerarTreinoIA(token, {
+        diaId: currentDay.id,
+        diaFoco: currentDay.focus,
+        nivel: perfil.nivel,
+        objetivo: perfil.objetivo,
+        objetivosExtras: perfil.objetivosExtras,
+        tempoPorTreino: perfil.tempoPorTreino,
+        equipamentos: perfil.equipamentos,
+        restricoes: perfil.restricoes,
+      });
+      setIaExercicios(resultado);
+    } catch (e) {
+      setIaErro(e.message || "Erro ao gerar treino com IA.");
+      setIaExercicios(null);
+    }
+  };
+
+  const iaCarregando = Array.isArray(iaExercicios) && iaExercicios.length === 0;
+
+  // Pipeline: nível → objetivo → fadiga. IA usa exercícios já planos.
+  const baseExercicios = (iaExercicios && iaExercicios.length > 0)
+    ? iaExercicios
+    : currentDay.exercises.map(aplanarNivel);
+
   // Ajuste de intensidade do dia e planejamento da semana.
   const exerciciosDoDia = ajustarExercicios(
-    ajustarPorObjetivo(currentDay.exercises.map(aplanarNivel), perfil),
+    ajustarPorObjetivo(baseExercicios, perfil),
     fadiga,
   );
   const dicaFadiga = NIVEIS_FADIGA.find((n) => n.id === fadiga);
@@ -248,7 +278,7 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
               {days.map((d) => (
                 <button
                   key={d.id}
-                  onClick={() => { setActiveDay(d.id); setExpandedExercise(null); }}
+                  onClick={() => { setActiveDay(d.id); setExpandedExercise(null); setIaExercicios(null); setIaErro(""); }}
                   style={{
                     background: activeDay === d.id ? d.color : "#141414",
                     color: activeDay === d.id ? "#000" : "#666",
@@ -340,6 +370,42 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
                 ? `✓ ${currentDay.label} concluído hoje`
                 : <><span style={{ fontSize: 18 }}>▶</span> Iniciar treino guiado</>}
             </button>
+
+            {/* Botão IA */}
+            <div style={{ marginBottom: 20 }}>
+              <button
+                type="button"
+                onClick={iaExercicios && iaExercicios.length > 0 ? () => { setIaExercicios(null); setIaErro(""); } : gerarComIA}
+                disabled={iaCarregando}
+                style={{
+                  width: "100%",
+                  background: iaCarregando ? "#141414" : (iaExercicios?.length > 0 ? "#1a1a1a" : "transparent"),
+                  border: `1px solid ${iaCarregando ? "#333" : (iaExercicios?.length > 0 ? "#555" : "#2a2a2a")}`,
+                  borderRadius: 999,
+                  padding: "12px 20px",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: iaCarregando ? "#444" : (iaExercicios?.length > 0 ? "#aaa" : "#666"),
+                  cursor: iaCarregando ? "default" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  letterSpacing: 0.3,
+                }}
+              >
+                {iaCarregando
+                  ? "Gerando com IA..."
+                  : iaExercicios?.length > 0
+                    ? "✓ Treino gerado por IA — voltar ao plano base"
+                    : "✨ Gerar treino com IA"}
+              </button>
+              {iaErro && (
+                <div style={{ fontSize: 12, color: "#ff6b6b", marginTop: 8, textAlign: "center", fontFamily: "monospace" }}>
+                  {iaErro}
+                </div>
+              )}
+            </div>
 
             {/* Exercícios */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
