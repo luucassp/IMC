@@ -24,6 +24,9 @@ export class PerfilDto {
   @IsOptional() @IsString()
   objetivo?: string;
 
+  @IsOptional() @IsArray() @IsString({ each: true })
+  objetivosExtras?: string[];
+
   @IsOptional() @IsString()
   nivel?: string;
 

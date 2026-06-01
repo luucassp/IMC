@@ -11,7 +11,7 @@ const DIVISAO_POR_DIAS = {
   7: "Push / Pull / Legs (2x)",
 };
 
-const PERFIL_OBJETIVO = {
+export const PERFIL_OBJETIVO = {
   emagrecimento: { reps: "12–15", descanso: "30–60 s", cardio: "20–30 min pós-treino", enfase: "Circuitos metabólicos + déficit calórico" },
   hipertrofia: { reps: "8–12", descanso: "60–90 s", cardio: "Opcional, leve", enfase: "Volume progressivo por grupo muscular" },
   forca: { reps: "3–6", descanso: "3–5 min", cardio: "Mínimo", enfase: "Cargas altas nos compostos, técnica acima de tudo" },
@@ -31,11 +31,26 @@ const VOLUME_POR_NIVEL = {
   avancado: "16–20 séries por grupo / semana",
 };
 
+// Aplica as repetições/descanso do objetivo primário aos acessórios; nos
+// compostos (PRINCIPAL) preserva o autoral mas alinha o descanso ao objetivo.
+// É o que faz o mesmo dia "PUSH" ficar diferente para hipertrofia vs força.
+export function ajustarPorObjetivo(exercicios, objetivoId) {
+  const perfil = PERFIL_OBJETIVO[objetivoId];
+  if (!perfil || objetivoId === "hipertrofia") return exercicios;
+  return exercicios.map((ex) => {
+    if (ex.category === "PRINCIPAL") {
+      return { ...ex, rest: perfil.descanso };
+    }
+    return { ...ex, reps: perfil.reps, rest: perfil.descanso };
+  });
+}
+
 export function recomendarTreino(perfil, imc, classificacao) {
   const dias = Number(perfil.diasPorSemana) || 3;
   const objetivo = PERFIL_OBJETIVO[perfil.objetivo] ?? PERFIL_OBJETIVO.hipertrofia;
   const divisao = DIVISAO_POR_DIAS[dias] ?? "Full Body";
   const volume = VOLUME_POR_NIVEL[perfil.nivel] ?? VOLUME_POR_NIVEL.iniciante;
+  const extras = (perfil.objetivosExtras ?? []).filter((id) => PERFIL_OBJETIVO[id]);
 
   const alertas = [];
 
@@ -67,14 +82,20 @@ export function recomendarTreino(perfil, imc, classificacao) {
     alertas.push("Sem cargas externas, progrida por variação de exercício, cadência e número de repetições.");
   }
 
+  const enfaseExtras = extras.map((id) => PERFIL_OBJETIVO[id].enfase);
+  const enfase = enfaseExtras.length
+    ? `${objetivo.enfase} · também: ${enfaseExtras.join("; ")}`
+    : objetivo.enfase;
+
   return {
     divisao,
     reps: objetivo.reps,
     descanso: objetivo.descanso,
     cardio: objetivo.cardio,
-    enfase: objetivo.enfase,
+    enfase,
     volume,
     dias,
     alertas,
+    objetivos: [perfil.objetivo, ...extras].filter(Boolean),
   };
 }

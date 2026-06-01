@@ -178,19 +178,27 @@ export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano
           <Linha label="Nível" valor={rotulo(NIVEIS, perfil.nivel)} />
           <Linha label="Tempo por treino" valor={`${perfil.tempoPorTreino} min`} />
           <div style={{ paddingTop: 12 }}>
-            <div style={{ fontSize: 13, color: "#777", marginBottom: 10 }}>Objetivo (toque para trocar)</div>
+            <div style={{ fontSize: 13, color: "#777", marginBottom: 10 }}>
+              Objetivo primário (toque para trocar)
+              {perfil.objetivosExtras?.length ? (
+                <span style={{ fontSize: 12, color: "#555", marginLeft: 6 }}>
+                  · também: {perfil.objetivosExtras.map((id) => rotulo(OBJETIVOS, id)).join(", ")}
+                </span>
+              ) : null}
+            </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {OBJETIVOS.map((o) => {
                 const ativo = perfil.objetivo === o.id;
+                const ehExtra = perfil.objetivosExtras?.includes(o.id);
                 return (
                   <button
                     key={o.id}
                     type="button"
                     onClick={() => onTrocarObjetivo(o.id)}
                     style={{
-                      background: ativo ? `${accent}18` : "#141414",
-                      border: `1px solid ${ativo ? accent : "#222"}`,
-                      color: ativo ? accent : "#999",
+                      background: ativo ? `${accent}18` : ehExtra ? "#1a1a14" : "#141414",
+                      border: `1px solid ${ativo ? accent : ehExtra ? "#33361a" : "#222"}`,
+                      color: ativo ? accent : ehExtra ? "#c8ccc0" : "#999",
                       borderRadius: 999,
                       padding: "6px 12px",
                       fontSize: 12,

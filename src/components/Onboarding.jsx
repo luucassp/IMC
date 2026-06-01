@@ -13,7 +13,7 @@ const PERFIL_INICIAL = {
   sexo: "",
   altura: "",
   peso: "",
-  objetivo: "",
+  objetivos: [], // primário = índice 0; restantes são secundários
   nivel: "",
   diasPorSemana: "",
   tempoPorTreino: "",
@@ -153,19 +153,41 @@ export default function Onboarding({ onConcluir, erro }) {
       ),
     },
     {
-      titulo: "Seu objetivo",
-      sub: "Qual é o foco principal agora?",
-      valido: () => perfil.objetivo,
-      render: () => (
-        <div style={s.grid}>
-          {OBJETIVOS.map((opt) => (
-            <Card key={opt.id} selecionado={perfil.objetivo === opt.id} onClick={() => set("objetivo", opt.id)}>
-              <div style={{ fontSize: 20, marginBottom: 4 }}>{opt.icon}</div>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>{opt.label}</div>
-            </Card>
-          ))}
-        </div>
-      ),
+      titulo: "Seus objetivos",
+      sub: "Escolha o foco principal (1º) e mescle até 2 secundários",
+      valido: () => perfil.objetivos.length > 0,
+      render: () => {
+        const alternar = (id) => {
+          const atual = perfil.objetivos;
+          if (atual.includes(id)) {
+            set("objetivos", atual.filter((x) => x !== id));
+          } else if (atual.length < 3) {
+            set("objetivos", [...atual, id]);
+          }
+        };
+        return (
+          <div style={s.grid}>
+            {OBJETIVOS.map((opt) => {
+              const idx = perfil.objetivos.indexOf(opt.id);
+              const ativo = idx >= 0;
+              const ehPrimario = idx === 0;
+              return (
+                <Card key={opt.id} selecionado={ativo} onClick={() => alternar(opt.id)}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+                    <span style={{ fontSize: 20 }}>{opt.icon}</span>
+                    {ativo && (
+                      <span style={{ fontFamily: "monospace", fontSize: 9, color: ehPrimario ? "#c8ff00" : "#888", letterSpacing: 1.5, padding: "2px 6px", border: `1px solid ${ehPrimario ? "#c8ff00" : "#333"}`, borderRadius: 4 }}>
+                        {ehPrimario ? "PRIMÁRIO" : `+${idx}`}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>{opt.label}</div>
+                </Card>
+              );
+            })}
+          </div>
+        );
+      },
     },
     {
       titulo: "Experiência",

@@ -30,6 +30,8 @@ model Perfil {
   altura         Float?
   peso           Float?
   objetivo       String?
+  // Objetivos secundários (até 2). JSON serializado.
+  objetivosExtras String  @default("[]")
   nivel          String?
   diasPorSemana  Int?
   tempoPorTreino Int?
