@@ -6,6 +6,7 @@ import { PerfilDto } from './dto/perfil.dto';
 type PerfilRow = {
   equipamentos: string;
   restricoes: string;
+  objetivosExtras: string;
 } & Record<string, unknown>;
 
 @Injectable()
@@ -18,10 +19,11 @@ export class PerfilService {
   }
 
   async salvar(userId: string, dto: PerfilDto) {
-    const { equipamentos, restricoes, ...resto } = dto;
+    const { equipamentos, restricoes, objetivosExtras, ...resto } = dto;
     const dados: Omit<Prisma.PerfilUncheckedCreateInput, 'userId'> = { ...resto };
     if (equipamentos !== undefined) dados.equipamentos = JSON.stringify(equipamentos);
     if (restricoes !== undefined) dados.restricoes = JSON.stringify(restricoes);
+    if (objetivosExtras !== undefined) dados.objetivosExtras = JSON.stringify(objetivosExtras);
 
     const perfil = await this.prisma.perfil.upsert({
       where: { userId },
@@ -37,6 +39,7 @@ export class PerfilService {
       ...perfil,
       equipamentos: this.parseArray(perfil.equipamentos),
       restricoes: this.parseArray(perfil.restricoes),
+      objetivosExtras: this.parseArray(perfil.objetivosExtras ?? '[]'),
     };
   }
 

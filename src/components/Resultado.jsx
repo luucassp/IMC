@@ -181,16 +181,18 @@ export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano
             <div style={{ fontSize: 13, color: "#777", marginBottom: 10 }}>Objetivo (toque para trocar)</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {OBJETIVOS.map((o) => {
-                const ativo = perfil.objetivo === o.id;
+                const isPrimario = perfil.objetivo === o.id;
+                const isSecundario = (perfil.objetivosExtras ?? []).includes(o.id);
+                const ativo = isPrimario || isSecundario;
                 return (
                   <button
                     key={o.id}
                     type="button"
                     onClick={() => onTrocarObjetivo(o.id)}
                     style={{
-                      background: ativo ? `${accent}18` : "#141414",
-                      border: `1px solid ${ativo ? accent : "#222"}`,
-                      color: ativo ? accent : "#999",
+                      background: isPrimario ? `${accent}18` : isSecundario ? "#1a1a1a" : "#141414",
+                      border: `1px solid ${isPrimario ? accent : isSecundario ? "#444" : "#222"}`,
+                      color: isPrimario ? accent : isSecundario ? "#aaa" : "#999",
                       borderRadius: 999,
                       padding: "6px 12px",
                       fontSize: 12,
@@ -199,6 +201,7 @@ export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano
                     }}
                   >
                     {o.icon} {o.label}
+                    {isPrimario && <span style={{ fontFamily: "monospace", fontSize: 8, marginLeft: 4, letterSpacing: 1, verticalAlign: "middle", color: accent }}>PRINCIPAL</span>}
                   </button>
                 );
               })}

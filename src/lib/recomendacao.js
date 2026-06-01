@@ -11,7 +11,7 @@ const DIVISAO_POR_DIAS = {
   7: "Push / Pull / Legs (2x)",
 };
 
-const PERFIL_OBJETIVO = {
+export const PERFIL_OBJETIVO = {
   emagrecimento: { reps: "12–15", descanso: "30–60 s", cardio: "20–30 min pós-treino", enfase: "Circuitos metabólicos + déficit calórico" },
   hipertrofia: { reps: "8–12", descanso: "60–90 s", cardio: "Opcional, leve", enfase: "Volume progressivo por grupo muscular" },
   forca: { reps: "3–6", descanso: "3–5 min", cardio: "Mínimo", enfase: "Cargas altas nos compostos, técnica acima de tudo" },
@@ -77,4 +77,24 @@ export function recomendarTreino(perfil, imc, classificacao) {
     dias,
     alertas,
   };
+}
+
+// Sobrescreve reps e descanso dos exercícios conforme o objetivo primário.
+// Com objetivos secundários, adiciona nota de ênfase mesclada.
+export function ajustarPorObjetivo(exercicios, perfil) {
+  const primario = PERFIL_OBJETIVO[perfil.objetivo];
+  if (!primario) return exercicios;
+
+  const extras = (perfil.objetivosExtras || []).filter((o) => PERFIL_OBJETIVO[o]);
+  const enfaseMista =
+    extras.length > 0
+      ? [primario.enfase, ...extras.map((o) => PERFIL_OBJETIVO[o].enfase)].join(" · ")
+      : null;
+
+  return exercicios.map((ex) => ({
+    ...ex,
+    reps: primario.reps,
+    rest: primario.descanso,
+    ...(enfaseMista ? { enfaseMista } : {}),
+  }));
 }

@@ -33,10 +33,11 @@ model Perfil {
   nivel          String?
   diasPorSemana  Int?
   tempoPorTreino Int?
-  // Arrays serializados em JSON (SQLite não tem tipo array nativo).
-  equipamentos   String   @default("[]")
-  restricoes     String   @default("[]")
-  atualizadoEm   DateTime @updatedAt
+  // Arrays serializados em JSON.
+  equipamentos    String   @default("[]")
+  restricoes      String   @default("[]")
+  objetivosExtras String   @default("[]")
+  atualizadoEm    DateTime @updatedAt
 }
 
 // Sessões de treino concluídas.

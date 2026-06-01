@@ -38,4 +38,7 @@ export class PerfilDto {
 
   @IsOptional() @IsArray() @IsString({ each: true })
   restricoes?: string[];
+
+  @IsOptional() @IsArray() @IsString({ each: true })
+  objetivosExtras?: string[];
 }

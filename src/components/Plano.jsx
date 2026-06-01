@@ -3,6 +3,7 @@ import { DIAS, METRICAS } from "../data/planos.js";
 import { api } from "../lib/api.js";
 import { parseDescanso } from "../lib/tempo.js";
 import { NIVEIS_FADIGA, ajustarExercicios } from "../lib/fadiga.js";
+import { ajustarPorObjetivo } from "../lib/recomendacao.js";
 import { planejarSemana } from "../lib/semana.js";
 import { buscarImagemExercicio } from "../lib/wger.js";
 import RestTimer from "./RestTimer.jsx";
@@ -166,7 +167,10 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
   }
 
   // Ajuste de intensidade do dia e planejamento da semana.
-  const exerciciosDoDia = ajustarExercicios(currentDay.exercises.map(aplanarNivel), fadiga);
+  const exerciciosDoDia = ajustarExercicios(
+    ajustarPorObjetivo(currentDay.exercises.map(aplanarNivel), perfil),
+    fadiga,
+  );
   const dicaFadiga = NIVEIS_FADIGA.find((n) => n.id === fadiga);
   const planejamento = planejarSemana(schedule, historico);
 

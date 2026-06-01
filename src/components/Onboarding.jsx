@@ -13,7 +13,7 @@ const PERFIL_INICIAL = {
   sexo: "",
   altura: "",
   peso: "",
-  objetivo: "",
+  objetivos: [],
   nivel: "",
   diasPorSemana: "",
   tempoPorTreino: "",
@@ -154,16 +154,33 @@ export default function Onboarding({ onConcluir, erro }) {
     },
     {
       titulo: "Seu objetivo",
-      sub: "Qual é o foco principal agora?",
-      valido: () => perfil.objetivo,
+      sub: "Escolha até 3 — o primeiro é o principal",
+      valido: () => perfil.objetivos.length > 0,
       render: () => (
         <div style={s.grid}>
-          {OBJETIVOS.map((opt) => (
-            <Card key={opt.id} selecionado={perfil.objetivo === opt.id} onClick={() => set("objetivo", opt.id)}>
-              <div style={{ fontSize: 20, marginBottom: 4 }}>{opt.icon}</div>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>{opt.label}</div>
-            </Card>
-          ))}
+          {OBJETIVOS.map((opt) => {
+            const idx = perfil.objetivos.indexOf(opt.id);
+            const selecionado = idx !== -1;
+            const cheio = perfil.objetivos.length >= 3 && !selecionado;
+            return (
+              <Card
+                key={opt.id}
+                selecionado={selecionado}
+                onClick={() => {
+                  if (selecionado) set("objetivos", perfil.objetivos.filter((o) => o !== opt.id));
+                  else if (!cheio) set("objetivos", [...perfil.objetivos, opt.id]);
+                }}
+              >
+                <div style={{ fontSize: 20, marginBottom: 4, opacity: cheio ? 0.4 : 1 }}>{opt.icon}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, opacity: cheio ? 0.4 : 1 }}>{opt.label}</div>
+                {selecionado && (
+                  <div style={{ fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginTop: 4, color: idx === 0 ? accent : "#777" }}>
+                    {idx === 0 ? "PRIMÁRIO" : `+${idx}`}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
         </div>
       ),
     },

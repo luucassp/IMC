@@ -12,12 +12,14 @@ import { carregarToken, salvarToken, limparToken } from "./lib/storage.js";
 
 // Normaliza os campos do onboarding para os tipos esperados pela API.
 function perfilParaApi(p) {
+  const objetivos = p.objetivos ?? (p.objetivo ? [p.objetivo] : []);
   return {
     idade: Number(p.idade),
     sexo: p.sexo,
     altura: Number(p.altura),
     peso: Number(p.peso),
-    objetivo: p.objetivo,
+    objetivo: objetivos[0] ?? "",
+    objetivosExtras: objetivos.slice(1),
     nivel: p.nivel,
     diasPorSemana: Number(p.diasPorSemana),
     tempoPorTreino: Number(p.tempoPorTreino),
