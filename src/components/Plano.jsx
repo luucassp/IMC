@@ -11,6 +11,7 @@ import MiniGrafico from "./MiniGrafico.jsx";
 import GuidedWorkout from "./GuidedWorkout.jsx";
 
 const accent = "#c8ff00";
+const FLAG_IA = "imc-treino:ia-hoje:v1";
 
 function mesmoDia(isoA, isoB) {
   return new Date(isoA).toDateString() === new Date(isoB).toDateString();
@@ -110,6 +111,9 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
   const [descanso, setDescanso] = useState(null); // { segundos, chave }
   const [exGrafico, setExGrafico] = useState("");
   const [fadiga, setFadiga] = useState("normal");
+  const [treinoIA, setTreinoIA] = useState(null);    // null = base; objeto = IA ativa
+  const [gerandoIA, setGerandoIA] = useState(false);
+  const [avisoIA, setAvisoIA] = useState("");        // mensagem de feedback (toast curto)
 
   // Carrega histórico, registros e dashboard (agregado no servidor) ao montar.
   useEffect(() => {
@@ -128,6 +132,46 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
   }, [token]);
 
   const recarregarDashboard = () => api.getDashboard(token).then(setDashboard).catch(() => {});
+
+  // Restaura o treino IA do dia se o usuário deixou ativado (cache do servidor).
+  useEffect(() => {
+    if (!token) return;
+    let ativo = true;
+    try {
+      if (localStorage.getItem(FLAG_IA) !== "1") return;
+    } catch {
+      return;
+    }
+    api.gerarTreinoIA(token, { fadiga, force: false })
+      .then((res) => { if (ativo && res?.source === "ia") setTreinoIA(res); })
+      .catch(() => {});
+    return () => { ativo = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  const gerarComIA = async (force = false) => {
+    setGerandoIA(true);
+    setAvisoIA("");
+    try {
+      const res = await api.gerarTreinoIA(token, { fadiga, force });
+      if (res?.source === "ia") {
+        setTreinoIA(res);
+        try { localStorage.setItem(FLAG_IA, "1"); } catch {}
+      } else {
+        setAvisoIA("Usando plano base hoje");
+      }
+    } catch (e) {
+      setAvisoIA(e?.message || "Falha ao gerar — usando plano base");
+    } finally {
+      setGerandoIA(false);
+    }
+  };
+
+  const voltarPlanoBase = () => {
+    setTreinoIA(null);
+    setAvisoIA("");
+    try { localStorage.removeItem(FLAG_IA); } catch {}
+  };
 
   const currentDay = days.find((d) => d.id === activeDay) ?? days[0];
 
@@ -167,10 +211,26 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
   }
 
   // Pipeline de adaptação: nível → objetivo (sobrescreve reps/descanso) → fadiga.
-  const exerciciosDoDia = ajustarExercicios(
+  const exerciciosBase = ajustarExercicios(
     ajustarPorObjetivo(currentDay.exercises.map(aplanarNivel), perfil.objetivo),
     fadiga,
   );
+
+  // Se houver treino IA ativo, ele substitui o plano base (a IA já considerou
+  // a fadiga no prompt — não aplicamos ajustes adicionais por cima).
+  const exerciciosDoDia = treinoIA?.treino?.length
+    ? treinoIA.treino.map((ex, i) => ({
+        category: i < 2 ? "PRINCIPAL" : "ACESSÓRIO",
+        name: ex.nome,
+        muscles: ex.musculo ? [ex.musculo] : [],
+        sets: String(ex.series),
+        reps: ex.reps,
+        rest: `${ex.descansoSegundos} s`,
+        cues: [],
+        note: ex.intensidade ? `Intensidade: ${ex.intensidade}` : "",
+        progression: "",
+      }))
+    : exerciciosBase;
   const dicaFadiga = NIVEIS_FADIGA.find((n) => n.id === fadiga);
   const planejamento = planejarSemana(schedule, historico);
 
@@ -269,10 +329,22 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
 
             {/* Cabeçalho do dia */}
             <div style={{ background: "#111", border: `1px solid ${currentDay.color}22`, borderLeft: `3px solid ${currentDay.color}`, borderRadius: 8, padding: "16px 18px", marginBottom: 20 }}>
-              <div style={{ fontFamily: "monospace", fontSize: 10, color: currentDay.color, letterSpacing: 3, marginBottom: 6 }}>
-                {currentDay.tag}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <span style={{ fontFamily: "monospace", fontSize: 10, color: currentDay.color, letterSpacing: 3 }}>
+                  {currentDay.tag}
+                </span>
+                {treinoIA && (
+                  <span style={{ fontFamily: "monospace", fontSize: 10, color: accent, letterSpacing: 2, padding: "3px 8px", border: `1px solid ${accent}55`, borderRadius: 999, background: `${accent}12` }}>
+                    ✨ IA
+                  </span>
+                )}
               </div>
               <div style={{ fontSize: 15, fontWeight: 600, color: "#f0ece4", lineHeight: 1.4 }}>{currentDay.focus}</div>
+              {treinoIA?.justificativa && (
+                <div style={{ fontSize: 12, color: "#888", marginTop: 8, lineHeight: 1.5 }}>
+                  {treinoIA.justificativa}
+                </div>
+              )}
             </div>
 
             {/* Como você está hoje? (ajuste por fadiga) */}
@@ -309,6 +381,56 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
               {fadiga !== "normal" && dicaFadiga && (
                 <div style={{ marginTop: 10, background: `${accent}10`, border: `1px solid ${accent}25`, borderRadius: 6, padding: "10px 12px", fontSize: 12, color: "#bcd", lineHeight: 1.5 }}>
                   {dicaFadiga.dica}
+                </div>
+              )}
+            </div>
+
+            {/* Geração por IA (Gemini Flash) */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ display: "flex", gap: 8 }}>
+                {!treinoIA ? (
+                  <button
+                    type="button"
+                    onClick={() => gerarComIA(false)}
+                    disabled={gerandoIA}
+                    style={{
+                      flex: 1,
+                      background: gerandoIA ? "#141414" : "#0f0f0f",
+                      border: `1px solid ${accent}55`,
+                      color: gerandoIA ? "#666" : accent,
+                      borderRadius: 999,
+                      padding: "12px 18px",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: gerandoIA ? "default" : "pointer",
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    {gerandoIA ? "Gerando treino inteligente..." : "✨ Gerar treino com IA"}
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => gerarComIA(true)}
+                      disabled={gerandoIA}
+                      style={{ flex: 1, background: "#0f0f0f", border: `1px solid ${accent}55`, color: accent, borderRadius: 999, padding: "12px 18px", fontSize: 13, fontWeight: 700, cursor: gerandoIA ? "default" : "pointer" }}
+                    >
+                      {gerandoIA ? "..." : "↻ Regenerar com IA"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={voltarPlanoBase}
+                      style={{ background: "none", border: "1px solid #2a2a2a", color: "#888", borderRadius: 999, padding: "12px 16px", fontSize: 13, cursor: "pointer" }}
+                    >
+                      Voltar ao plano base
+                    </button>
+                  </>
+                )}
+              </div>
+              {avisoIA && (
+                <div style={{ marginTop: 10, fontFamily: "monospace", fontSize: 11, color: "#888", textAlign: "center" }}>
+                  {avisoIA}
                 </div>
               )}
             </div>

@@ -4,9 +4,12 @@ import { DashboardService } from './dashboard.service';
 import { HistoricoController } from './historico.controller';
 import { RegistroController } from './registro.controller';
 import { DashboardController } from './dashboard.controller';
+import { TreinoIaController } from './treino-ia.controller';
+import { LlmModule } from '../llm/llm.module';
 
 @Module({
-  controllers: [HistoricoController, RegistroController, DashboardController],
+  imports: [LlmModule],
+  controllers: [HistoricoController, RegistroController, DashboardController, TreinoIaController],
   providers: [TreinoService, DashboardService],
 })
 export class TreinoModule {}
