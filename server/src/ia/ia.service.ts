@@ -1,5 +1,6 @@
 import { Injectable, BadGatewayException } from '@nestjs/common';
 import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GerarTreinoDto } from './dto/gerar-treino.dto';
 
 const SYSTEM_PROMPT = `You are a certified personal trainer generating structured workout programs.
@@ -71,34 +72,46 @@ function mockPorObjetivo(objetivo: string): unknown[] {
 
 @Injectable()
 export class IaService {
-  private client: Anthropic | null;
+  private anthropic: Anthropic | null;
+  private gemini: GoogleGenerativeAI | null;
 
   constructor() {
-    const key = process.env.ANTHROPIC_API_KEY;
-    this.client = key ? new Anthropic({ apiKey: key }) : null;
+    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY;
+    this.anthropic = anthropicKey ? new Anthropic({ apiKey: anthropicKey }) : null;
+    this.gemini = geminiKey ? new GoogleGenerativeAI(geminiKey) : null;
   }
 
   async gerarTreino(dto: GerarTreinoDto): Promise<unknown[]> {
-    // Sem chave configurada → retorna treino demo para o UX ser testável.
-    if (!this.client) {
-      return this.gerarMock(dto);
-    }
+    if (this.anthropic) return this.gerarComAnthropic(dto);
+    if (this.gemini) return this.gerarComGemini(dto);
+    return this.gerarMock(dto);
+  }
 
+  private buildUserMessage(dto: GerarTreinoDto): string {
     const objetivos = [dto.objetivo, ...(dto.objetivosExtras ?? [])].filter(Boolean).join(', ');
     const equipamentos = (dto.equipamentos ?? []).join(', ') || 'academia';
     const restricoes = (dto.restricoes ?? []).join(', ') || 'nenhuma';
-
-    const userMessage = `Generate a workout for a ${dto.nivel ?? 'intermediario'} athlete.
+    return `Generate a workout for a ${dto.nivel ?? 'intermediario'} athlete.
 Primary goal: ${dto.objetivo ?? 'hipertrofia'}
 Secondary goals: ${objetivos}
 Workout focus: ${dto.diaFoco}
 Session duration: ${dto.tempoPorTreino ?? 60} minutes
 Available equipment: ${equipamentos}
 Physical restrictions: ${restricoes}`;
+  }
 
+  private parseJson(raw: string): unknown[] {
+    const match = raw.match(/\[[\s\S]*\]/);
+    const parsed = JSON.parse(match ? match[0] : raw);
+    if (!Array.isArray(parsed)) throw new Error('not an array');
+    return parsed;
+  }
+
+  private async gerarComAnthropic(dto: GerarTreinoDto): Promise<unknown[]> {
     let raw: string;
     try {
-      const msg = await this.client.messages.create({
+      const msg = await this.anthropic!.messages.create({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 2048,
         system: [
@@ -109,20 +122,32 @@ Physical restrictions: ${restricoes}`;
             cache_control: { type: 'ephemeral' },
           },
         ],
-        messages: [{ role: 'user', content: userMessage }],
+        messages: [{ role: 'user', content: this.buildUserMessage(dto) }],
       });
-
       raw = msg.content[0].type === 'text' ? msg.content[0].text : '';
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       throw new BadGatewayException(`Anthropic API error: ${msg}`);
     }
-
     try {
-      const match = raw.match(/\[[\s\S]*\]/);
-      const parsed = JSON.parse(match ? match[0] : raw);
-      if (!Array.isArray(parsed)) throw new Error('not an array');
-      return parsed;
+      return this.parseJson(raw);
+    } catch {
+      throw new BadGatewayException('Resposta da IA não é JSON válido. Tente novamente.');
+    }
+  }
+
+  private async gerarComGemini(dto: GerarTreinoDto): Promise<unknown[]> {
+    let raw: string;
+    try {
+      const model = this.gemini!.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(`${SYSTEM_PROMPT}\n\n${this.buildUserMessage(dto)}`);
+      raw = result.response.text();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      throw new BadGatewayException(`Gemini API error: ${msg}`);
+    }
+    try {
+      return this.parseJson(raw);
     } catch {
       throw new BadGatewayException('Resposta da IA não é JSON válido. Tente novamente.');
     }
