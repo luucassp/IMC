@@ -92,13 +92,17 @@ export class IaService {
     const objetivos = [dto.objetivo, ...(dto.objetivosExtras ?? [])].filter(Boolean).join(', ');
     const equipamentos = (dto.equipamentos ?? []).join(', ') || 'academia';
     const restricoes = (dto.restricoes ?? []).join(', ') || 'nenhuma';
-    return `Generate a workout for a ${dto.nivel ?? 'intermediario'} athlete.
-Primary goal: ${dto.objetivo ?? 'hipertrofia'}
-Secondary goals: ${objetivos}
-Workout focus: ${dto.diaFoco}
-Session duration: ${dto.tempoPorTreino ?? 60} minutes
-Available equipment: ${equipamentos}
-Physical restrictions: ${restricoes}`;
+    return `MANDATORY SESSION: ${dto.diaFoco}
+ALL exercises MUST target ONLY the muscles listed in this session.
+Do NOT include ANY exercise from other muscle groups — this is a hard constraint.
+
+Athlete profile:
+- Level: ${dto.nivel ?? 'intermediario'}
+- Primary goal: ${dto.objetivo ?? 'hipertrofia'}
+- Secondary goals: ${objetivos}
+- Session duration: ${dto.tempoPorTreino ?? 60} minutes
+- Available equipment: ${equipamentos}
+- Physical restrictions: ${restricoes}`;
   }
 
   private parseJson(raw: string): unknown[] {
