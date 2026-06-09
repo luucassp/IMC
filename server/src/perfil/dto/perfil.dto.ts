@@ -28,6 +28,9 @@ export class PerfilDto {
   objetivosExtras?: string[];
 
   @IsOptional() @IsString()
+  enfaseCorporal?: string;
+
+  @IsOptional() @IsString()
   nivel?: string;
 
   @IsOptional() @IsInt() @Min(1) @Max(7)

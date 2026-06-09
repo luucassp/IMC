@@ -23,11 +23,15 @@ export type TreinoIA = z.infer<typeof respostaSchema>;
 export type ParametrosIA = {
   imc: number | null;
   classificacao: string;
+  sexo: string;
   nivel: string;
   objetivo: string;
+  objetivosExtras: string[];
+  enfaseCorporal: string; // "equilibrado" | "inferiores" | "superiores"
   equipamentos: string[];
   lesoes: string[];
   fadiga: string;
+  diaFoco: string; // "PUSH — Peito · Ombro · Tríceps" etc. Vazio se livre.
 };
 
 @Injectable()
@@ -85,11 +89,38 @@ export class GeminiService {
     const equip = p.equipamentos?.length ? p.equipamentos.join(', ') : 'nenhum';
     const lesoes = p.lesoes?.length ? p.lesoes.join(', ') : 'nenhuma';
     const imcTxt = p.imc != null ? `${p.imc.toFixed(1)}` : 'desconhecido';
+    const objExtras = p.objetivosExtras?.length ? p.objetivosExtras.join(', ') : 'nenhum';
+    const enfase = p.enfaseCorporal || 'equilibrado';
+    const dia = p.diaFoco?.trim()
+      ? `OBRIGATÓRIO: o treino é da sessão "${p.diaFoco}". Todos os exercícios precisam atacar essa região corporal. NÃO inclua exercícios de outras regiões.`
+      : 'Treino do dia (sem sessão específica) — distribua exercícios compostos.';
+
     return [
       'Você é um personal trainer. Gere um treino para o dia em JSON estrito.',
-      `Perfil: IMC ${imcTxt} (${p.classificacao}), nível ${p.nivel}, objetivo ${p.objetivo}, equipamentos: ${equip}, fadiga: ${p.fadiga}, lesões: ${lesoes}.`,
-      'Regras: IMC>=30 evite impacto. Fadiga "exausto" reduza volume para no máximo 4 exercícios.',
-      'Retorne JSON com:',
+      '',
+      'Perfil:',
+      `- IMC ${imcTxt} (${p.classificacao})`,
+      `- Sexo: ${p.sexo || 'não informado'}`,
+      `- Nível: ${p.nivel}`,
+      `- Objetivo principal: ${p.objetivo}`,
+      `- Objetivos secundários: ${objExtras}`,
+      `- Ênfase corporal preferida: ${enfase}`,
+      `- Equipamentos: ${equip}`,
+      `- Fadiga hoje: ${p.fadiga}`,
+      `- Lesões/restrições: ${lesoes}`,
+      '',
+      dia,
+      '',
+      'Regras:',
+      '- IMC ≥ 30: evite exercícios de impacto.',
+      '- Fadiga "exausto": no máximo 4 exercícios, intensidade leve/moderada.',
+      '- Sexo feminino + ênfase "inferiores": priorize glúteo, posterior de coxa e quadríceps, com volume um pouco maior nos acessórios para glúteo.',
+      '- Ênfase "inferiores": só vale como reforço quando o dia permitir (perna/full body); se a sessão for de superiores, respeite a sessão.',
+      '- Respeite as lesões — exclua qualquer movimento que sobrecarregue a região listada.',
+      '- Adapte reps/descanso ao objetivo principal.',
+      '- Use 5 a 7 exercícios (a menos que a fadiga reduza para 4).',
+      '',
+      'Retorne SOMENTE este JSON, sem comentários:',
       '{',
       '  "treino": [',
       '    { "nome": "...", "musculo": "...", "series": number, "reps": "string", "descansoSegundos": number, "intensidade": "leve|moderado|pesado" }',

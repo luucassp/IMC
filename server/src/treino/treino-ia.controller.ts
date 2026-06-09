@@ -11,6 +11,11 @@ export class TreinoIaController {
 
   @Post('ia')
   gerarIA(@CurrentUser() user: AuthUser, @Body() dto: GerarTreinoIaDto) {
-    return this.treino.gerarTreinoComIA(user.id, dto.fadiga ?? 'normal', dto.force ?? false);
+    return this.treino.gerarTreinoComIA(user.id, {
+      fadiga: dto.fadiga ?? 'normal',
+      diaId: dto.diaId ?? '',
+      diaFoco: dto.diaFoco ?? '',
+      force: dto.force ?? false,
+    });
   }
 }

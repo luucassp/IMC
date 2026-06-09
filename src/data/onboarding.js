@@ -40,6 +40,12 @@ export const EQUIPAMENTOS = [
   { id: "peso_corporal", label: "Apenas peso corporal", icon: "🤲" },
 ];
 
+export const ENFASES_CORPORAIS = [
+  { id: "equilibrado", label: "Equilibrado", icon: "⚖️", desc: "Distribuição uniforme entre superior e inferior" },
+  { id: "inferiores", label: "Mais inferiores", icon: "🦵", desc: "Mais volume em pernas, glúteo e posterior" },
+  { id: "superiores", label: "Mais superiores", icon: "💪", desc: "Mais volume em peito, costas, ombro e braços" },
+];
+
 export const RESTRICOES = [
   { id: "joelho", label: "Joelho" },
   { id: "ombro", label: "Ombro" },

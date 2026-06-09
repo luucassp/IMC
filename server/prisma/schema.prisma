@@ -33,6 +33,8 @@ model Perfil {
   objetivo       String?
   // Objetivos secundários (até 2). JSON serializado.
   objetivosExtras String  @default("[]")
+  // Ênfase corporal preferida: "equilibrado" | "inferiores" | "superiores".
+  enfaseCorporal String?
   nivel          String?
   diasPorSemana  Int?
   tempoPorTreino Int?
@@ -62,12 +64,14 @@ model TreinoIA {
   userId        String
   // YYYY-MM-DD — chave de cache diária.
   data          String
+  // Sessão da divisão (A/B/C/...). Vazio para IA "do dia" não vinculada a um split.
+  diaId         String   @default("")
   fadiga        String
   treino        String   // JSON serializado do array de exercícios
   justificativa String?
   criadoEm      DateTime @default(now())
 
-  @@unique([userId, data])
+  @@unique([userId, data, diaId])
 }
 
 // Séries registradas (carga × reps) por exercício.

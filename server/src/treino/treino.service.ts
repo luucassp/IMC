@@ -28,6 +28,13 @@ function parseArray(valor: string | null | undefined): string[] {
   }
 }
 
+export type ParametrosIaEntrada = {
+  fadiga: string;
+  diaId: string;
+  diaFoco: string;
+  force: boolean;
+};
+
 @Injectable()
 export class TreinoService {
   private readonly logger = new Logger(TreinoService.name);
@@ -59,14 +66,15 @@ export class TreinoService {
     return this.prisma.registro.create({ data: { userId, ...dto } });
   }
 
-  // Gera (ou recupera do cache do dia) um treino com IA. Em qualquer falha
-  // retorna source:"base" para o front cair no plano de regras.
-  async gerarTreinoComIA(userId: string, fadiga: string, force: boolean) {
+  // Gera (ou recupera do cache do dia + sessão) um treino com IA. Em qualquer
+  // falha retorna source:"base" para o front cair no plano de regras.
+  async gerarTreinoComIA(userId: string, entrada: ParametrosIaEntrada) {
     const hoje = dataHoje();
+    const { fadiga, diaId, diaFoco, force } = entrada;
 
     if (!force) {
       const cache = await this.prisma.treinoIA.findUnique({
-        where: { userId_data: { userId, data: hoje } },
+        where: { userId_data_diaId: { userId, data: hoje, diaId } },
       });
       if (cache) {
         return {
@@ -74,6 +82,7 @@ export class TreinoService {
           treino: JSON.parse(cache.treino),
           justificativa: cache.justificativa ?? '',
           fadiga: cache.fadiga,
+          diaId: cache.diaId,
           cached: true,
         };
       }
@@ -94,18 +103,23 @@ export class TreinoService {
       const resp = await this.gemini.gerarTreino({
         imc,
         classificacao: classificarIMC(imc),
+        sexo: perfil.sexo ?? '',
         nivel: perfil.nivel ?? 'iniciante',
         objetivo: perfil.objetivo ?? 'hipertrofia',
+        objetivosExtras: parseArray(perfil.objetivosExtras),
+        enfaseCorporal: perfil.enfaseCorporal ?? 'equilibrado',
         equipamentos: parseArray(perfil.equipamentos),
         lesoes: parseArray(perfil.restricoes),
         fadiga,
+        diaFoco,
       });
 
       await this.prisma.treinoIA.upsert({
-        where: { userId_data: { userId, data: hoje } },
+        where: { userId_data_diaId: { userId, data: hoje, diaId } },
         create: {
           userId,
           data: hoje,
+          diaId,
           fadiga,
           treino: JSON.stringify(resp.treino),
           justificativa: resp.justificativa_resumida,
@@ -122,6 +136,7 @@ export class TreinoService {
         treino: resp.treino,
         justificativa: resp.justificativa_resumida,
         fadiga,
+        diaId,
         cached: false,
       };
     } catch (err) {

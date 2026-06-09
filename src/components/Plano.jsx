@@ -11,7 +11,22 @@ import MiniGrafico from "./MiniGrafico.jsx";
 import GuidedWorkout from "./GuidedWorkout.jsx";
 
 const accent = "#c8ff00";
-const FLAG_IA = "imc-treino:ia-hoje:v1";
+const FLAG_IA = "imc-treino:ia-dias:v1"; // Set serializado de diaIds com IA ativa
+
+function carregarFlagsIA() {
+  try {
+    const raw = localStorage.getItem(FLAG_IA);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function salvarFlagsIA(set) {
+  try {
+    localStorage.setItem(FLAG_IA, JSON.stringify([...set]));
+  } catch { /* ignora */ }
+}
 
 function mesmoDia(isoA, isoB) {
   return new Date(isoA).toDateString() === new Date(isoB).toDateString();
@@ -111,7 +126,7 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
   const [descanso, setDescanso] = useState(null); // { segundos, chave }
   const [exGrafico, setExGrafico] = useState("");
   const [fadiga, setFadiga] = useState("normal");
-  const [treinoIA, setTreinoIA] = useState(null);    // null = base; objeto = IA ativa
+  const [treinosIA, setTreinosIA] = useState({});    // { [diaId]: { treino, justificativa, fadiga } }
   const [gerandoIA, setGerandoIA] = useState(false);
   const [avisoIA, setAvisoIA] = useState("");        // mensagem de feedback (toast curto)
 
@@ -133,32 +148,44 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
 
   const recarregarDashboard = () => api.getDashboard(token).then(setDashboard).catch(() => {});
 
-  // Restaura o treino IA do dia se o usuário deixou ativado (cache do servidor).
+  // Restaura, do cache do servidor, o treino IA do dia ativo (se o usuário
+  // tinha deixado ativado). Roda toda vez que o dia ativo muda.
   useEffect(() => {
     if (!token) return;
+    const diaId = activeDay;
+    if (!diaId || treinosIA[diaId]) return;
+    const flags = carregarFlagsIA();
+    if (!flags.has(diaId)) return;
     let ativo = true;
-    try {
-      if (localStorage.getItem(FLAG_IA) !== "1") return;
-    } catch {
-      return;
-    }
-    api.gerarTreinoIA(token, { fadiga, force: false })
-      .then((res) => { if (ativo && res?.source === "ia") setTreinoIA(res); })
+    const diaAtual = days.find((d) => d.id === diaId);
+    api.gerarTreinoIA(token, { fadiga, diaId, diaFoco: diaAtual?.focus ?? "", force: false })
+      .then((res) => {
+        if (!ativo || res?.source !== "ia") return;
+        setTreinosIA((prev) => ({ ...prev, [diaId]: res }));
+      })
       .catch(() => {});
     return () => { ativo = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, activeDay]);
 
   const gerarComIA = async (force = false) => {
     setGerandoIA(true);
     setAvisoIA("");
+    const diaId = currentDay.id;
     try {
-      const res = await api.gerarTreinoIA(token, { fadiga, force });
+      const res = await api.gerarTreinoIA(token, {
+        fadiga,
+        diaId,
+        diaFoco: currentDay.focus,
+        force,
+      });
       if (res?.source === "ia") {
-        setTreinoIA(res);
-        try { localStorage.setItem(FLAG_IA, "1"); } catch {}
+        setTreinosIA((prev) => ({ ...prev, [diaId]: res }));
+        const flags = carregarFlagsIA();
+        flags.add(diaId);
+        salvarFlagsIA(flags);
       } else {
-        setAvisoIA("Usando plano base hoje");
+        setAvisoIA("Usando plano base — sem IA configurada ou falha na geração");
       }
     } catch (e) {
       setAvisoIA(e?.message || "Falha ao gerar — usando plano base");
@@ -168,10 +195,19 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) 
   };
 
   const voltarPlanoBase = () => {
-    setTreinoIA(null);
+    const diaId = currentDay.id;
+    setTreinosIA((prev) => {
+      const next = { ...prev };
+      delete next[diaId];
+      return next;
+    });
     setAvisoIA("");
-    try { localStorage.removeItem(FLAG_IA); } catch {}
+    const flags = carregarFlagsIA();
+    flags.delete(diaId);
+    salvarFlagsIA(flags);
   };
+
+  const treinoIA = treinosIA[currentDay.id] ?? null;
 
   const currentDay = days.find((d) => d.id === activeDay) ?? days[0];
 

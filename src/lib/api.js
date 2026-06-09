@@ -33,6 +33,6 @@ export const api = {
   getRegistros: (token) => request("/registros", { token }),
   addRegistro: (token, entrada) => request("/registros", { method: "POST", token, body: entrada }),
   getDashboard: (token) => request("/dashboard", { token }),
-  gerarTreinoIA: (token, { fadiga, force } = {}) =>
-    request("/treino/ia", { method: "POST", token, body: { fadiga, force } }),
+  gerarTreinoIA: (token, { fadiga, diaId, diaFoco, force } = {}) =>
+    request("/treino/ia", { method: "POST", token, body: { fadiga, diaId, diaFoco, force } }),
 };

@@ -5,6 +5,7 @@ import {
   NIVEIS,
   TEMPOS,
   EQUIPAMENTOS,
+  ENFASES_CORPORAIS,
   RESTRICOES,
 } from "../data/onboarding.js";
 
@@ -14,6 +15,7 @@ const PERFIL_INICIAL = {
   altura: "",
   peso: "",
   objetivos: [], // primário = índice 0; restantes são secundários
+  enfaseCorporal: "equilibrado",
   nivel: "",
   diasPorSemana: "",
   tempoPorTreino: "",
@@ -188,6 +190,28 @@ export default function Onboarding({ onConcluir, erro }) {
           </div>
         );
       },
+    },
+    {
+      titulo: "Ênfase corporal",
+      sub: "Como quer distribuir o volume entre superior e inferior?",
+      valido: () => Boolean(perfil.enfaseCorporal),
+      render: () => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {ENFASES_CORPORAIS.map((opt) => (
+            <Card
+              key={opt.id}
+              selecionado={perfil.enfaseCorporal === opt.id}
+              onClick={() => set("enfaseCorporal", opt.id)}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                <span style={{ fontSize: 20 }}>{opt.icon}</span>
+                <span style={{ fontSize: 15, fontWeight: 600 }}>{opt.label}</span>
+              </div>
+              <div style={{ fontSize: 12, color: "#777" }}>{opt.desc}</div>
+            </Card>
+          ))}
+        </div>
+      ),
     },
     {
       titulo: "Experiência",

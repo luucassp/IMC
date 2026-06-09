@@ -20,6 +20,7 @@ function perfilParaApi(p) {
     peso: Number(p.peso),
     objetivo: objetivos[0],
     objetivosExtras: objetivos.slice(1),
+    enfaseCorporal: p.enfaseCorporal,
     nivel: p.nivel,
     diasPorSemana: Number(p.diasPorSemana),
     tempoPorTreino: Number(p.tempoPorTreino),
