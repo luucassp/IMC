@@ -139,7 +139,7 @@ Physical restrictions: ${restricoes}`;
   private async gerarComGemini(dto: GerarTreinoDto): Promise<unknown[]> {
     let raw: string;
     try {
-      const model = this.gemini!.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.gemini!.getGenerativeModel({ model: 'gemini-2.5-flash' });
       const result = await model.generateContent(`${SYSTEM_PROMPT}\n\n${this.buildUserMessage(dto)}`);
       raw = result.response.text();
     } catch (err: unknown) {
