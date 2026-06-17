@@ -136,9 +136,18 @@ export const CelestialSphere: React.FC<CelestialSphereProps> = ({
     };
 
     const animate = () => {
+      if (document.hidden) return; // pausa total se a aba não está visível
       material.uniforms.u_time.value += 0.005 * speed;
       renderer.render(scene, camera);
       animationFrameId = requestAnimationFrame(animate);
+    };
+
+    const onVisibility = () => {
+      if (document.hidden) {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      } else {
+        animate();
+      }
     };
 
     const resize = () => {
@@ -158,11 +167,13 @@ export const CelestialSphere: React.FC<CelestialSphereProps> = ({
     const addEventListeners = () => {
       window.addEventListener("resize", resize);
       window.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("visibilitychange", onVisibility);
     };
 
     const removeEventListeners = () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
 
     init();

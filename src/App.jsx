@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import Auth from "./components/Auth.jsx";
-import Onboarding from "./components/Onboarding.jsx";
-import Home from "./components/Home.tsx";
-import Resultado from "./components/Resultado.jsx";
-import Plano from "./components/Plano.jsx";
+
+// Cada tela vira um chunk separado — só baixa quando o usuário chega nela.
+const Onboarding = lazy(() => import("./components/Onboarding.jsx"));
+const Home = lazy(() => import("./components/Home.tsx"));
+const Resultado = lazy(() => import("./components/Resultado.jsx"));
+const Plano = lazy(() => import("./components/Plano.jsx"));
 import { calcularIMC, classificarIMC } from "./lib/imc.js";
 import { recomendarTreino } from "./lib/recomendacao.js";
 import { gerarPlano } from "./lib/plano.js";
@@ -117,46 +119,52 @@ export default function App() {
 
   if (!token) return <Auth onAutenticado={aoAutenticar} />;
   if (carregando) return <Carregando />;
-  if (!perfil) return <Onboarding onConcluir={concluirOnboarding} erro={erro} />;
 
-  const perfilUI = { ...perfil, nome: user?.nome ?? "" };
-  const imc = calcularIMC(perfil.peso, perfil.altura);
-  const faixa = classificarIMC(imc);
-  const recomendacao = recomendarTreino(perfil, imc, faixa);
-  const plano = gerarPlano(perfil, recomendacao);
+  // Telas pesadas atrás de Suspense para entrarem em chunks separados.
+  const tela = (() => {
+    if (!perfil) return <Onboarding onConcluir={concluirOnboarding} erro={erro} />;
 
-  if (view === "plano") {
-    return <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} />;
-  }
+    const perfilUI = { ...perfil, nome: user?.nome ?? "" };
+    const imc = calcularIMC(perfil.peso, perfil.altura);
+    const faixa = classificarIMC(imc);
+    const recomendacao = recomendarTreino(perfil, imc, faixa);
+    const plano = gerarPlano(perfil, recomendacao);
 
-  if (view === "perfil") {
+    if (view === "plano") {
+      return <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} />;
+    }
+    if (view === "perfil") {
+      return (
+        <Resultado
+          perfil={perfilUI}
+          imc={imc}
+          faixa={faixa}
+          recomendacao={recomendacao}
+          onVerPlano={() => setView("plano")}
+          onTrocarObjetivo={trocarObjetivo}
+          onReiniciar={refazer}
+          onVoltar={() => setView("home")}
+          onSair={sair}
+        />
+      );
+    }
     return (
-      <Resultado
+      <Home
+        user={user}
         perfil={perfilUI}
         imc={imc}
         faixa={faixa}
         recomendacao={recomendacao}
+        plano={plano}
+        token={token}
         onVerPlano={() => setView("plano")}
-        onTrocarObjetivo={trocarObjetivo}
-        onReiniciar={refazer}
-        onVoltar={() => setView("home")}
+        onVerPerfil={() => setView("perfil")}
         onSair={sair}
       />
     );
-  }
+  })();
 
   return (
-    <Home
-      user={user}
-      perfil={perfilUI}
-      imc={imc}
-      faixa={faixa}
-      recomendacao={recomendacao}
-      plano={plano}
-      token={token}
-      onVerPlano={() => setView("plano")}
-      onVerPerfil={() => setView("perfil")}
-      onSair={sair}
-    />
+    <Suspense fallback={<Carregando />}>{tela}</Suspense>
   );
 }

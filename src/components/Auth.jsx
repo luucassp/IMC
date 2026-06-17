@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { api } from "../lib/api.js";
-import CelestialSphere from "./ui/celestial-sphere";
+
+// CelestialSphere puxa Three.js (~600KB). Carrega depois pra não bloquear o LCP.
+const CelestialSphere = lazy(() => import("./ui/celestial-sphere"));
 
 const accent = "#c8ff00";
 const GOOGLE_CLIENT_ID = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
@@ -99,13 +101,15 @@ export default function Auth({ onAutenticado }) {
 
   return (
     <div style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "#000" }}>
-      <CelestialSphere
-        hue={210}
-        speed={0.4}
-        zoom={1.2}
-        particleSize={4.0}
-        className="absolute inset-0 w-full h-full"
-      />
+      <Suspense fallback={<div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, #0a1428 0%, #000 80%)" }} />}>
+        <CelestialSphere
+          hue={210}
+          speed={0.4}
+          zoom={1.2}
+          particleSize={4.0}
+          className="absolute inset-0 w-full h-full"
+        />
+      </Suspense>
       <div style={{
         position: "relative",
         zIndex: 10,
