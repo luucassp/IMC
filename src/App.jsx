@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import Auth from "./components/Auth.jsx";
-import Onboarding from "./components/Onboarding.jsx";
-import Home from "./components/Home.tsx";
-import Resultado from "./components/Resultado.jsx";
-import Plano from "./components/Plano.jsx";
-import TreinoLivre from "./components/TreinoLivre.jsx";
 import { calcularIMC, classificarIMC } from "./lib/imc.js";
 import { recomendarTreino } from "./lib/recomendacao.js";
 import { gerarPlano } from "./lib/plano.js";
 import { api } from "./lib/api.js";
 import { carregarToken, salvarToken, limparToken } from "./lib/storage.js";
+
+const Home = lazy(() => import("./components/Home.tsx"));
+const Onboarding = lazy(() => import("./components/Onboarding.jsx"));
+const Resultado = lazy(() => import("./components/Resultado.jsx"));
+const Plano = lazy(() => import("./components/Plano.jsx"));
+const TreinoLivre = lazy(() => import("./components/TreinoLivre.jsx"));
 
 // Normaliza os campos do onboarding para os tipos esperados pela API.
 function perfilParaApi(p) {
@@ -117,7 +118,14 @@ export default function App() {
 
   if (!token) return <Auth onAutenticado={aoAutenticar} />;
   if (carregando) return <Carregando />;
-  if (!perfil) return <Onboarding onConcluir={concluirOnboarding} erro={erro} />;
+
+  if (!perfil) {
+    return (
+      <Suspense fallback={<Carregando />}>
+        <Onboarding onConcluir={concluirOnboarding} erro={erro} />
+      </Suspense>
+    );
+  }
 
   const perfilUI = { ...perfil, nome: user?.nome ?? "" };
   const imc = calcularIMC(perfil.peso, perfil.altura);
@@ -125,20 +133,16 @@ export default function App() {
   const recomendacao = recomendarTreino(perfil, imc, faixa);
   const plano = gerarPlano(perfil, recomendacao);
 
+  let conteudo;
+
   if (view === "plano") {
-    return <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} />;
-  }
-
-  if (view === "evolucao") {
-    return <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} />;
-  }
-
-  if (view === "treino-livre") {
-    return <TreinoLivre perfil={perfilUI} token={token} onVoltar={() => setView("home")} />;
-  }
-
-  if (view === "perfil") {
-    return (
+    conteudo = <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} />;
+  } else if (view === "evolucao") {
+    conteudo = <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} tabInicial="historico" />;
+  } else if (view === "treino-livre") {
+    conteudo = <TreinoLivre perfil={perfilUI} token={token} onVoltar={() => setView("home")} />;
+  } else if (view === "perfil") {
+    conteudo = (
       <Resultado
         perfil={perfilUI}
         imc={imc}
@@ -151,20 +155,22 @@ export default function App() {
         onSair={sair}
       />
     );
+  } else {
+    conteudo = (
+      <Home
+        user={user}
+        perfil={perfilUI}
+        recomendacao={recomendacao}
+        plano={plano}
+        token={token}
+        onVerPlano={() => setView("plano")}
+        onVerPerfil={() => setView("perfil")}
+        onVerEvolucao={() => setView("evolucao")}
+        onTreinoLivre={() => setView("treino-livre")}
+        onSair={sair}
+      />
+    );
   }
 
-  return (
-    <Home
-      user={user}
-      perfil={perfilUI}
-      recomendacao={recomendacao}
-      plano={plano}
-      token={token}
-      onVerPlano={() => setView("plano")}
-      onVerPerfil={() => setView("perfil")}
-      onVerEvolucao={() => setView("evolucao")}
-      onTreinoLivre={() => setView("treino-livre")}
-      onSair={sair}
-    />
-  );
+  return <Suspense fallback={<Carregando />}>{conteudo}</Suspense>;
 }

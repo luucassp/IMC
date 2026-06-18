@@ -97,13 +97,13 @@ function LogCarga({ exercicio, cor, ultima, onRegistrar }) {
   );
 }
 
-export default function Plano({ plano, perfil, recomendacao, token, onVoltar }) {
+export default function Plano({ plano, perfil, recomendacao, token, onVoltar, tabInicial }) {
   const { days, schedule, semAcademia } = plano;
   const nivel = perfil.nivel || "iniciante";
   const [activeDay, setActiveDay] = useState(days[0]?.id);
   const [expandedExercise, setExpandedExercise] = useState(null);
   const [guidedMode, setGuidedMode] = useState(false);
-  const [tab, setTab] = useState("treino");
+  const [tab, setTab] = useState(tabInicial || "treino");
   const [historico, setHistorico] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [dashboard, setDashboard] = useState(null);
