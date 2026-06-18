@@ -139,6 +139,39 @@ export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano
         </div>
       </div>
 
+      {/* IMC */}
+      {imc != null && (
+        <div style={{
+          display: "flex", gap: 10, marginBottom: 16,
+          animation: "fadeUp 0.5s 0.12s ease both",
+        }}>
+          <div style={{
+            flex: 1,
+            background: "linear-gradient(145deg, #111318 0%, #0d0d0f 100%)",
+            border: "1px solid rgba(255,255,255,0.04)",
+            borderRadius: 12,
+            padding: "16px 14px",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+          }}>
+            <div style={{ fontSize: 10, color: "#555", fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>IMC</div>
+            <div style={{ fontSize: 42, fontWeight: 900, color: faixa?.cor ?? "#666", lineHeight: 1 }}>{imc}</div>
+          </div>
+          <div style={{
+            flex: 2,
+            background: "linear-gradient(145deg, #111318 0%, #0d0d0f 100%)",
+            border: "1px solid rgba(255,255,255,0.04)",
+            borderRadius: 12,
+            padding: "16px 14px",
+            display: "flex", flexDirection: "column", justifyContent: "center",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+          }}>
+            <div style={{ fontSize: 10, color: "#555", fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>Classificação</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: faixa?.cor ?? "#666", lineHeight: 1.2 }}>{faixa?.classe ?? "—"}</div>
+            <div style={{ fontSize: 12, color: "#555", marginTop: 6 }}>{perfil.peso} kg · {perfil.altura} cm</div>
+          </div>
+        </div>
+      )}
+
       {/* Recomendação */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
         <Bloco titulo="TREINO RECOMENDADO" delay={0.16}>

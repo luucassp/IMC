@@ -4,7 +4,6 @@ import { api } from "../lib/api.js";
 import { planejarSemana } from "../lib/semana.js";
 import { DIAS } from "../data/planos.js";
 
-type FaixaIMC = { classe: string; cor: string };
 type Recomendacao = { divisao: string; dias: number; volume: string; enfase: string };
 type ScheduleSlot = { day: string; session: string | null; rest: boolean };
 type Plano = { days: { id: string; label: string; color: string; focus: string }[]; schedule: ScheduleSlot[] };
@@ -19,13 +18,13 @@ type Dashboard = {
 type Props = {
   user: { nome: string; avatarUrl?: string | null };
   perfil: { peso: number; altura: number };
-  imc: number | null;
-  faixa: FaixaIMC | null;
   recomendacao: Recomendacao;
   plano: Plano;
   token: string;
   onVerPlano: () => void;
   onVerPerfil: () => void;
+  onVerEvolucao: () => void;
+  onTreinoLivre: () => void;
   onSair: () => void;
 };
 
@@ -86,9 +85,10 @@ function Sparkline({ pontos, color }: { pontos: number[]; color: string }) {
   );
 }
 
-export default function Home({ user, perfil, imc, faixa, recomendacao, plano, token, onVerPlano, onVerPerfil, onSair }: Props) {
+export default function Home({ user, perfil, recomendacao, plano, token, onVerPlano, onVerPerfil, onVerEvolucao, onTreinoLivre, onSair }: Props) {
   const [historico, setHistorico] = useState<Historico[]>([]);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
+  const [menuAberto, setMenuAberto] = useState(false);
 
   useEffect(() => {
     let ativo = true;
@@ -116,6 +116,25 @@ export default function Home({ user, perfil, imc, faixa, recomendacao, plano, to
     : undefined;
   const proximoSlot = planejamento.dias.find((d, i) => i > hojeIdx && !d.rest);
 
+  const streak = (() => {
+    if (!historico.length) return 0;
+    const datas = [...new Set(historico.map((h) => new Date(h.data).toDateString()))].sort(
+      (a, b) => new Date(b).getTime() - new Date(a).getTime()
+    );
+    let count = 0;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    for (let i = 0; i < datas.length; i++) {
+      const d = new Date(datas[i]);
+      d.setHours(0, 0, 0, 0);
+      const diff = Math.round((hoje.getTime() - d.getTime()) / 86400000);
+      if (diff === count || diff === count + 1) {
+        count = diff + 1;
+      } else break;
+    }
+    return count;
+  })();
+
   const cardCls = "rounded-2xl bg-[#0f0f0f] border border-[#1a1a1a] p-5";
 
   return (
@@ -131,15 +150,50 @@ export default function Home({ user, perfil, imc, faixa, recomendacao, plano, to
             <div className="text-[#888] text-sm font-mono tracking-widest uppercase">{saudacao()} 🔥</div>
             <h1 className="text-3xl font-bold mt-1 leading-tight">{user.nome}</h1>
           </div>
-          <div className="flex items-center gap-3">
-            {user.avatarUrl ? (
-              <img src={user.avatarUrl} alt="" className="w-10 h-10 rounded-full border border-[#222]" />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-[#141414] border border-[#222] flex items-center justify-center text-sm font-bold">
-                {user.nome?.[0]?.toUpperCase()}
-              </div>
+          <div className="relative">
+            <button
+              onClick={() => setMenuAberto((v) => !v)}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              {user.avatarUrl ? (
+                <img src={user.avatarUrl} alt="" className="w-10 h-10 rounded-full border border-[#222]" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-[#141414] border border-[#222] flex items-center justify-center text-sm font-bold">
+                  {user.nome?.[0]?.toUpperCase()}
+                </div>
+              )}
+              <span className="text-xs text-[#666]">▼</span>
+            </button>
+            {menuAberto && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setMenuAberto(false)} />
+                <div className="absolute right-0 top-14 z-50 w-52 rounded-xl bg-[#141414] border border-[#222] shadow-2xl overflow-hidden">
+                  {([
+                    { icon: "👤", label: "Meu Perfil", action: () => { setMenuAberto(false); onVerPerfil(); } },
+                    { icon: "📊", label: "Minha Evolução", action: () => { setMenuAberto(false); onVerEvolucao(); } },
+                    { icon: "🏋️", label: "Meu Plano", action: () => { setMenuAberto(false); onVerPlano(); } },
+                    { icon: "🎯", label: "Treino Livre", action: () => { setMenuAberto(false); onTreinoLivre(); } },
+                  ] as { icon: string; label: string; action: () => void }[]).map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={item.action}
+                      className="w-full text-left px-4 py-3 text-sm text-[#ccc] hover:bg-[#1a1a1a] flex items-center gap-3 cursor-pointer transition-colors"
+                    >
+                      <span>{item.icon}</span>
+                      {item.label}
+                    </button>
+                  ))}
+                  <div className="border-t border-[#222]" />
+                  <button
+                    onClick={() => { setMenuAberto(false); onSair(); }}
+                    className="w-full text-left px-4 py-3 text-sm text-[#ff6b6b] hover:bg-[#1a1010] flex items-center gap-3 cursor-pointer transition-colors"
+                  >
+                    <span>🚪</span>
+                    Sair
+                  </button>
+                </div>
+              </>
             )}
-            <button onClick={onSair} className="text-xs text-[#666] hover:text-[#aaa] cursor-pointer">Sair</button>
           </div>
         </motion.div>
 
@@ -235,10 +289,10 @@ export default function Home({ user, perfil, imc, faixa, recomendacao, plano, to
           </div>
 
           <div className={cardCls}>
-            <div className="text-[10px] font-mono text-[#666] tracking-widest mb-2">IMC</div>
-            <div className="text-3xl font-bold">{imc ?? "—"}</div>
-            <div className="text-xs mt-1 font-bold" style={{ color: faixa?.cor ?? "#666" }}>
-              {faixa?.classe ?? "—"}
+            <div className="text-[10px] font-mono text-[#666] tracking-widest mb-2">SEQUÊNCIA</div>
+            <div className="text-3xl font-bold">{streak}</div>
+            <div className="text-xs mt-1 text-[#666]">
+              {streak === 1 ? "dia seguido" : "dias seguidos"}
             </div>
           </div>
 
@@ -296,10 +350,10 @@ export default function Home({ user, perfil, imc, faixa, recomendacao, plano, to
             <div className="font-bold text-sm">Plano completo</div>
             <div className="text-xs text-[#666] mt-1">{plano.days.length} dias · {recomendacao.divisao}</div>
           </button>
-          <button onClick={onVerPerfil} className={`${cardCls} text-left hover:bg-[#141414] transition-colors cursor-pointer`}>
-            <div className="text-xl mb-1">👤</div>
-            <div className="font-bold text-sm">Meu perfil</div>
-            <div className="text-xs text-[#666] mt-1">{perfil.peso} kg · {perfil.altura} cm</div>
+          <button onClick={onTreinoLivre} className={`${cardCls} text-left hover:bg-[#141414] transition-colors cursor-pointer`}>
+            <div className="text-xl mb-1">🎯</div>
+            <div className="font-bold text-sm">Treino livre</div>
+            <div className="text-xs text-[#666] mt-1">Monte seu treino hoje</div>
           </button>
         </motion.div>
 
