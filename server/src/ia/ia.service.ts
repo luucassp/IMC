@@ -1,6 +1,7 @@
 import { Injectable, BadGatewayException } from '@nestjs/common';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { GerarTreinoDto } from './dto/gerar-treino.dto';
 
 const SYSTEM_PROMPT = `You are a certified personal trainer generating structured workout programs.
@@ -74,15 +75,19 @@ function mockPorObjetivo(objetivo: string): unknown[] {
 export class IaService {
   private anthropic: Anthropic | null;
   private gemini: GoogleGenerativeAI | null;
+  private openai: OpenAI | null;
 
   constructor() {
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
     const geminiKey = process.env.GEMINI_API_KEY;
+    const openaiKey = process.env.OPENAI_API_KEY;
     this.anthropic = anthropicKey ? new Anthropic({ apiKey: anthropicKey }) : null;
     this.gemini = geminiKey ? new GoogleGenerativeAI(geminiKey) : null;
+    this.openai = openaiKey ? new OpenAI({ apiKey: openaiKey }) : null;
   }
 
   async gerarTreino(dto: GerarTreinoDto): Promise<unknown[]> {
+    if (this.openai) return this.gerarComOpenAI(dto);
     if (this.anthropic) return this.gerarComAnthropic(dto);
     if (this.gemini) return this.gerarComGemini(dto);
     return this.gerarMock(dto);
@@ -149,6 +154,29 @@ Athlete profile:
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       throw new BadGatewayException(`Gemini API error: ${msg}`);
+    }
+    try {
+      return this.parseJson(raw);
+    } catch {
+      throw new BadGatewayException('Resposta da IA não é JSON válido. Tente novamente.');
+    }
+  }
+
+  private async gerarComOpenAI(dto: GerarTreinoDto): Promise<unknown[]> {
+    let raw: string;
+    try {
+      const response = await this.openai!.chat.completions.create({
+        model: 'gpt-4o-mini',
+        max_tokens: 2048,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: this.buildUserMessage(dto) },
+        ],
+      });
+      raw = response.choices[0]?.message?.content ?? '';
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      throw new BadGatewayException(`OpenAI API error: ${msg}`);
     }
     try {
       return this.parseJson(raw);
