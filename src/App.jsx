@@ -4,6 +4,7 @@ import Onboarding from "./components/Onboarding.jsx";
 import Home from "./components/Home.tsx";
 import Resultado from "./components/Resultado.jsx";
 import Plano from "./components/Plano.jsx";
+import TreinoLivre from "./components/TreinoLivre.jsx";
 import { calcularIMC, classificarIMC } from "./lib/imc.js";
 import { recomendarTreino } from "./lib/recomendacao.js";
 import { gerarPlano } from "./lib/plano.js";
@@ -128,6 +129,14 @@ export default function App() {
     return <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} />;
   }
 
+  if (view === "evolucao") {
+    return <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} />;
+  }
+
+  if (view === "treino-livre") {
+    return <TreinoLivre perfil={perfilUI} token={token} onVoltar={() => setView("home")} />;
+  }
+
   if (view === "perfil") {
     return (
       <Resultado
@@ -148,13 +157,13 @@ export default function App() {
     <Home
       user={user}
       perfil={perfilUI}
-      imc={imc}
-      faixa={faixa}
       recomendacao={recomendacao}
       plano={plano}
       token={token}
       onVerPlano={() => setView("plano")}
       onVerPerfil={() => setView("perfil")}
+      onVerEvolucao={() => setView("evolucao")}
+      onTreinoLivre={() => setView("treino-livre")}
       onSair={sair}
     />
   );
