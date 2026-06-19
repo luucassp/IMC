@@ -166,7 +166,7 @@ Athlete profile:
     let raw: string;
     try {
       const response = await this.openai!.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo',
         max_tokens: 2048,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
