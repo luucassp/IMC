@@ -49,13 +49,15 @@ export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano
         <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
           Meu perfil
         </span>
-        <button
-          type="button"
-          onClick={onSair}
-          style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 13 }}
-        >
-          Sair
-        </button>
+        {onSair && (
+          <button
+            type="button"
+            onClick={onSair}
+            style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 13 }}
+          >
+            Sair
+          </button>
+        )}
       </div>
       <h1 style={{
         fontSize: "clamp(36px, 9vw, 60px)",

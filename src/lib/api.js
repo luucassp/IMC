@@ -1,37 +1,116 @@
-// Cliente HTTP da API. O token é passado pelo App (que o guarda no storage).
-const API_URL = import.meta.env?.VITE_API_URL || "http://localhost:3333";
+// Modo local: perfil, histórico e registros vivem no localStorage do navegador.
+// Sem backend, sem banco — o site é 100% estático (Vercel).
+// A interface é a mesma do antigo cliente HTTP; o parâmetro `token` é ignorado.
 
-async function request(path, { method = "GET", token, body } = {}) {
-  const res = await fetch(`${API_URL}${path}`, {
-    method,
-    headers: {
-      ...(body ? { "Content-Type": "application/json" } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+const API_URL = import.meta.env?.VITE_API_URL || "";
 
-  const texto = await res.text();
-  const dados = texto ? JSON.parse(texto) : null;
+const K_PERFIL = "imc-treino:perfil:v1";
+const K_HISTORICO = "imc-treino:historico:v1";
+const K_REGISTROS = "imc-treino:registros:v1";
 
-  if (!res.ok) {
-    const msg = dados?.message ?? "Erro na requisição.";
-    throw new Error(Array.isArray(msg) ? msg.join(", ") : msg);
+function ler(chave, padrao) {
+  try {
+    const raw = localStorage.getItem(chave);
+    return raw ? JSON.parse(raw) : padrao;
+  } catch {
+    return padrao;
   }
-  return dados;
+}
+
+function salvar(chave, valor) {
+  try {
+    localStorage.setItem(chave, JSON.stringify(valor));
+  } catch {
+    /* modo privado / cota cheia */
+  }
+}
+
+function uid() {
+  return crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function inserir(chave, entrada) {
+  const novo = { id: uid(), data: new Date().toISOString(), ...entrada };
+  salvar(chave, [novo, ...ler(chave, [])]);
+  return novo;
+}
+
+// Agregados que antes o servidor calculava (GET /dashboard).
+function computarDashboard(historico, registros) {
+  const total = historico.length;
+  const seteDiasAtras = Date.now() - 7 * 86400000;
+  const ultimos7 = historico.filter((h) => new Date(h.data).getTime() >= seteDiasAtras).length;
+
+  // Treinos por semana (segunda como início), últimas 6 semanas com atividade.
+  const porSemana = new Map();
+  for (const h of historico) {
+    const d = new Date(h.data);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    porSemana.set(d.getTime(), (porSemana.get(d.getTime()) ?? 0) + 1);
+  }
+  const frequencia = [...porSemana.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .slice(-6)
+    .map(([ts, valor]) => ({
+      label: new Date(ts).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+      valor,
+    }));
+
+  // Progressão: maior carga do dia, por exercício.
+  const progressao = {};
+  const ordenados = [...registros].sort((a, b) => new Date(a.data) - new Date(b.data));
+  for (const r of ordenados) {
+    const dia = new Date(r.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+    const serie = (progressao[r.exercicio] ??= []);
+    const ultimo = serie.at(-1);
+    if (ultimo?.label === dia) ultimo.valor = Math.max(ultimo.valor, r.carga);
+    else serie.push({ label: dia, valor: r.carga });
+  }
+
+  return { total, ultimos7, frequencia, progressao };
 }
 
 export const api = {
-  register: (dados) => request("/auth/register", { method: "POST", body: dados }),
-  login: (dados) => request("/auth/login", { method: "POST", body: dados }),
-  loginGoogle: (idToken) => request("/auth/google", { method: "POST", body: { idToken } }),
-  me: (token) => request("/auth/me", { token }),
-  getPerfil: (token) => request("/perfil", { token }),
-  putPerfil: (token, perfil) => request("/perfil", { method: "PUT", token, body: perfil }),
-  getHistorico: (token) => request("/historico", { token }),
-  addHistorico: (token, entrada) => request("/historico", { method: "POST", token, body: entrada }),
-  getRegistros: (token) => request("/registros", { token }),
-  addRegistro: (token, entrada) => request("/registros", { method: "POST", token, body: entrada }),
-  getDashboard: (token) => request("/dashboard", { token }),
-  gerarTreinoIA: (token, dto) => request("/ia/treino", { method: "POST", token, body: dto }),
+  getPerfil: async () => ler(K_PERFIL, null),
+  putPerfil: async (_token, dto) => {
+    const novo = { ...(ler(K_PERFIL, null) ?? {}), ...dto };
+    salvar(K_PERFIL, novo);
+    return novo;
+  },
+  resetPerfil: async () => {
+    try {
+      localStorage.removeItem(K_PERFIL);
+    } catch {
+      /* ignora */
+    }
+  },
+
+  getHistorico: async () => ler(K_HISTORICO, []),
+  addHistorico: async (_token, entrada) => inserir(K_HISTORICO, entrada),
+
+  getRegistros: async () => ler(K_REGISTROS, []),
+  addRegistro: async (_token, entrada) => inserir(K_REGISTROS, entrada),
+
+  getDashboard: async () => computarDashboard(ler(K_HISTORICO, []), ler(K_REGISTROS, [])),
+
+  // IA continua precisando de um servidor (a chave não pode ficar no navegador).
+  // Sem VITE_API_URL configurada, o Treino Livre mostra o aviso abaixo.
+  gerarTreinoIA: async (_token, dto) => {
+    if (!API_URL) {
+      throw new Error("IA indisponível no modo local. Configure VITE_API_URL quando tiver um backend de IA.");
+    }
+    const res = await fetch(`${API_URL}/ia/treino`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    });
+    const texto = await res.text();
+    const dados = texto ? JSON.parse(texto) : null;
+    if (!res.ok) {
+      const msg = dados?.message ?? "Erro ao gerar treino.";
+      throw new Error(Array.isArray(msg) ? msg.join(", ") : msg);
+    }
+    return dados;
+  },
 };
