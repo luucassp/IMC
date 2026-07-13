@@ -1,18 +1,17 @@
 import { useState, useEffect, lazy, Suspense } from "react";
-import Auth from "./components/Auth.jsx";
 import { calcularIMC, classificarIMC } from "./lib/imc.js";
 import { recomendarTreino } from "./lib/recomendacao.js";
 import { gerarPlano } from "./lib/plano.js";
 import { api } from "./lib/api.js";
-import { carregarToken, salvarToken, limparToken } from "./lib/storage.js";
 
 const Home = lazy(() => import("./components/Home.tsx"));
 const Onboarding = lazy(() => import("./components/Onboarding.jsx"));
 const Resultado = lazy(() => import("./components/Resultado.jsx"));
 const Plano = lazy(() => import("./components/Plano.jsx"));
 const TreinoLivre = lazy(() => import("./components/TreinoLivre.jsx"));
+const Ciclo = lazy(() => import("./components/Ciclo.jsx"));
 
-// Normaliza os campos do onboarding para os tipos esperados pela API.
+// Normaliza os campos do onboarding para os tipos esperados pelo storage local.
 function perfilParaApi(p) {
   const objetivos = p.objetivos ?? (p.objetivo ? [p.objetivo] : []);
   return {
@@ -39,60 +38,23 @@ function Carregando() {
 }
 
 export default function App() {
-  const [token, setToken] = useState(() => carregarToken());
-  const [user, setUser] = useState(null);
   const [perfil, setPerfil] = useState(null);
-  const [carregando, setCarregando] = useState(Boolean(token));
+  const [carregando, setCarregando] = useState(true);
   const [view, setView] = useState("home");
   const [erro, setErro] = useState("");
 
-  // Ao ter token (login ou restaurado), valida e busca o perfil.
+  // App pessoal, modo local: perfil vem do localStorage — sem login.
   useEffect(() => {
-    if (!token) {
-      setCarregando(false);
-      return;
-    }
-    let ativo = true;
-    setCarregando(true);
-    (async () => {
-      try {
-        const [u, p] = await Promise.all([api.me(token), api.getPerfil(token)]);
-        if (!ativo) return;
-        setUser(u);
-        setPerfil(p);
-      } catch {
-        if (!ativo) return;
-        limparToken();
-        setToken(null);
-        setUser(null);
-        setPerfil(null);
-      } finally {
-        if (ativo) setCarregando(false);
-      }
-    })();
-    return () => {
-      ativo = false;
-    };
-  }, [token]);
-
-  const aoAutenticar = ({ token: t, user: u }) => {
-    salvarToken(t);
-    setUser(u);
-    setToken(t);
-  };
-
-  const sair = () => {
-    limparToken();
-    setToken(null);
-    setUser(null);
-    setPerfil(null);
-    setView("home");
-  };
+    api.getPerfil()
+      .then(setPerfil)
+      .catch(() => {})
+      .finally(() => setCarregando(false));
+  }, []);
 
   const concluirOnboarding = async (p) => {
     setErro("");
     try {
-      const salvo = await api.putPerfil(token, perfilParaApi(p));
+      const salvo = await api.putPerfil(null, perfilParaApi(p));
       setPerfil(salvo);
       setView("home");
     } catch (e) {
@@ -102,21 +64,21 @@ export default function App() {
 
   const trocarObjetivo = async (objetivo) => {
     const anterior = perfil;
-    setPerfil({ ...perfil, objetivo }); // atualização otimista
+    setPerfil({ ...perfil, objetivo });
     try {
-      const salvo = await api.putPerfil(token, { objetivo });
+      const salvo = await api.putPerfil(null, { objetivo });
       setPerfil(salvo);
     } catch {
-      setPerfil(anterior); // reverte em caso de erro
+      setPerfil(anterior);
     }
   };
 
-  const refazer = () => {
+  const refazer = async () => {
+    await api.resetPerfil();
     setPerfil(null);
     setView("home");
   };
 
-  if (!token) return <Auth onAutenticado={aoAutenticar} />;
   if (carregando) return <Carregando />;
 
   if (!perfil) {
@@ -127,7 +89,8 @@ export default function App() {
     );
   }
 
-  const perfilUI = { ...perfil, nome: user?.nome ?? "" };
+  const user = { nome: perfil.nome || "Atleta" };
+  const perfilUI = { ...perfil, nome: user.nome };
   const imc = calcularIMC(perfil.peso, perfil.altura);
   const faixa = classificarIMC(imc);
   const recomendacao = recomendarTreino(perfil, imc, faixa);
@@ -135,12 +98,14 @@ export default function App() {
 
   let conteudo;
 
-  if (view === "plano") {
-    conteudo = <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} />;
+  if (view === "ciclo") {
+    conteudo = <Ciclo token="" onVoltar={() => setView("home")} />;
+  } else if (view === "plano") {
+    conteudo = <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token="" onVoltar={() => setView("home")} />;
   } else if (view === "evolucao") {
-    conteudo = <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} tabInicial="historico" />;
+    conteudo = <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token="" onVoltar={() => setView("home")} tabInicial="historico" />;
   } else if (view === "treino-livre") {
-    conteudo = <TreinoLivre perfil={perfilUI} token={token} onVoltar={() => setView("home")} />;
+    conteudo = <TreinoLivre perfil={perfilUI} token="" onVoltar={() => setView("home")} />;
   } else if (view === "perfil") {
     conteudo = (
       <Resultado
@@ -152,22 +117,17 @@ export default function App() {
         onTrocarObjetivo={trocarObjetivo}
         onReiniciar={refazer}
         onVoltar={() => setView("home")}
-        onSair={sair}
       />
     );
   } else {
     conteudo = (
       <Home
         user={user}
-        perfil={perfilUI}
-        recomendacao={recomendacao}
-        plano={plano}
-        token={token}
-        onVerPlano={() => setView("plano")}
+        token=""
+        onVerCiclo={() => setView("ciclo")}
         onVerPerfil={() => setView("perfil")}
         onVerEvolucao={() => setView("evolucao")}
         onTreinoLivre={() => setView("treino-livre")}
-        onSair={sair}
       />
     );
   }

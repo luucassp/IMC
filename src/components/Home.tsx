@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { api } from "../lib/api.js";
-import { planejarSemana } from "../lib/semana.js";
-import { DIAS } from "../data/planos.js";
+import { semanaDoCiclo, isoLocal, proximoDia } from "../lib/ciclo.js";
+import { CICLO_INFO } from "../data/ciclo.js";
 
-type Recomendacao = { divisao: string; dias: number; volume: string; enfase: string };
-type ScheduleSlot = { day: string; session: string | null; rest: boolean };
-type Plano = { days: { id: string; label: string; color: string; focus: string }[]; schedule: ScheduleSlot[] };
 type Historico = { id: string; data: string; diaId: string; diaLabel: string; foco: string };
 type Dashboard = {
   total: number;
@@ -17,18 +14,15 @@ type Dashboard = {
 
 type Props = {
   user: { nome: string; avatarUrl?: string | null };
-  perfil: { peso: number; altura: number };
-  recomendacao: Recomendacao;
-  plano: Plano;
   token: string;
-  onVerPlano: () => void;
+  onVerCiclo: () => void;
   onVerPerfil: () => void;
   onVerEvolucao: () => void;
   onTreinoLivre: () => void;
-  onSair: () => void;
 };
 
-const ACCENT = "#c8ff00";
+const ACCENT = "#ff8c1a";
+const TREINOS_SEMANA = 6; // TER–DOM · segunda = descanso
 
 function saudacao() {
   const h = new Date().getHours();
@@ -85,7 +79,7 @@ function Sparkline({ pontos, color }: { pontos: number[]; color: string }) {
   );
 }
 
-export default function Home({ user, perfil, recomendacao, plano, token, onVerPlano, onVerPerfil, onVerEvolucao, onTreinoLivre, onSair }: Props) {
+export default function Home({ user, token, onVerCiclo, onVerPerfil, onVerEvolucao, onTreinoLivre }: Props) {
   const [historico, setHistorico] = useState<Historico[]>([]);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [menuAberto, setMenuAberto] = useState(false);
@@ -102,19 +96,16 @@ export default function Home({ user, perfil, recomendacao, plano, token, onVerPl
     return () => { ativo = false; };
   }, [token]);
 
-  const planejamento = planejarSemana(plano.schedule, historico);
+  const semana = semanaDoCiclo(historico);
   const hojeIdx = (new Date().getDay() + 6) % 7;
-  const slotHoje = planejamento.dias[hojeIdx];
-  const dayHoje = slotHoje?.session ? DIAS[slotHoje.session as keyof typeof DIAS] : null;
-
-  const inicioSemana = new Date();
-  inicioSemana.setDate(inicioSemana.getDate() - hojeIdx);
+  const slotHoje = semana[hojeIdx];
+  const diaHoje = slotHoje?.dia ?? null;
+  const proximo = proximoDia(isoLocal(new Date()));
 
   // Exercício com mais registros — melhor candidato pra mostrar progressão.
   const melhorExercicio = dashboard
     ? Object.entries(dashboard.progressao).sort((a, b) => b[1].length - a[1].length)[0]
     : undefined;
-  const proximoSlot = planejamento.dias.find((d, i) => i > hojeIdx && !d.rest);
 
   const streak = (() => {
     if (!historico.length) return 0;
@@ -149,6 +140,9 @@ export default function Home({ user, perfil, recomendacao, plano, token, onVerPl
           <div>
             <div className="text-[#888] text-sm font-mono tracking-widest uppercase">{saudacao()} 🔥</div>
             <h1 className="text-3xl font-bold mt-1 leading-tight">{user.nome}</h1>
+            <div className="text-[10px] font-mono tracking-widest mt-1" style={{ color: ACCENT }}>
+              MAYRENCROSFIT · {CICLO_INFO.ciclo.toUpperCase()}
+            </div>
           </div>
           <div className="relative">
             <button
@@ -171,7 +165,7 @@ export default function Home({ user, perfil, recomendacao, plano, token, onVerPl
                   {([
                     { icon: "👤", label: "Meu Perfil", action: () => { setMenuAberto(false); onVerPerfil(); } },
                     { icon: "📊", label: "Minha Evolução", action: () => { setMenuAberto(false); onVerEvolucao(); } },
-                    { icon: "🏋️", label: "Meu Plano", action: () => { setMenuAberto(false); onVerPlano(); } },
+                    { icon: "🏋️", label: "Ciclo de Treinos", action: () => { setMenuAberto(false); onVerCiclo(); } },
                     { icon: "🎯", label: "Treino Livre", action: () => { setMenuAberto(false); onTreinoLivre(); } },
                   ] as { icon: string; label: string; action: () => void }[]).map((item) => (
                     <button
@@ -183,14 +177,6 @@ export default function Home({ user, perfil, recomendacao, plano, token, onVerPl
                       {item.label}
                     </button>
                   ))}
-                  <div className="border-t border-[#222]" />
-                  <button
-                    onClick={() => { setMenuAberto(false); onSair(); }}
-                    className="w-full text-left px-4 py-3 text-sm text-[#ff6b6b] hover:bg-[#1a1010] flex items-center gap-3 cursor-pointer transition-colors"
-                  >
-                    <span>🚪</span>
-                    Sair
-                  </button>
                 </div>
               </>
             )}
@@ -202,9 +188,7 @@ export default function Home({ user, perfil, recomendacao, plano, token, onVerPl
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.05 }}
           className="flex gap-2 mb-6 overflow-x-auto"
         >
-          {planejamento.dias.map((d, i) => {
-            const data = new Date(inicioSemana);
-            data.setDate(data.getDate() + i);
+          {semana.map((d, i) => {
             const ehHoje = i === hojeIdx;
             const feito = d.status === "feito";
             const perdido = d.status === "perdido";
@@ -213,14 +197,14 @@ export default function Home({ user, perfil, recomendacao, plano, token, onVerPl
                 key={i}
                 className={[
                   "flex-1 min-w-[42px] py-3 rounded-2xl flex flex-col items-center transition-colors",
-                  feito ? "bg-[#c8ff00] text-black"
-                  : ehHoje ? "bg-[#141414] ring-2 ring-[#c8ff00] text-[#c8ff00]"
-                  : perdido ? "bg-[#1a1010] text-[#FF6B35] border border-[#FF6B3540]"
+                  feito ? "bg-[#ff8c1a] text-black"
+                  : ehHoje ? "bg-[#141414] ring-2 ring-[#ff8c1a] text-[#ff8c1a]"
+                  : perdido ? "bg-[#1a1010] text-[#ff5d7a] border border-[#ff5d7a40]"
                   : "bg-[#0f0f0f] text-[#666] border border-[#1a1a1a]",
                 ].join(" ")}
               >
-                <span className="text-[10px] font-mono tracking-widest">{d.day}</span>
-                <span className="text-lg font-bold mt-1">{data.getDate()}</span>
+                <span className="text-[10px] font-mono tracking-widest">{d.dow}</span>
+                <span className="text-lg font-bold mt-1">{d.diaDoMes}</span>
               </div>
             );
           })}
@@ -231,35 +215,35 @@ export default function Home({ user, perfil, recomendacao, plano, token, onVerPl
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }}
           className="mb-6"
         >
-          {slotHoje?.rest || !dayHoje ? (
+          {!diaHoje ? (
             <div className={`${cardCls} flex items-center justify-between`}>
               <div>
                 <div className="text-[10px] font-mono text-[#666] tracking-widest">HOJE</div>
                 <div className="text-xl font-bold mt-1">Dia de descanso 💤</div>
-                <div className="text-sm text-[#666] mt-2">Recuperação ativa: alongamento ou caminhada leve.</div>
+                <div className="text-sm text-[#666] mt-2">Descanso total — recuperar pra semana que vem.</div>
               </div>
               <div className="text-4xl">😌</div>
             </div>
           ) : (
             <div
               className="rounded-2xl p-6 relative overflow-hidden"
-              style={{ background: `linear-gradient(135deg, ${dayHoje.color}22 0%, #0f0f0f 80%)`, border: `1px solid ${dayHoje.color}55` }}
+              style={{ background: `linear-gradient(135deg, ${ACCENT}22 0%, #0f0f0f 80%)`, border: `1px solid ${ACCENT}55` }}
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="text-[10px] font-mono tracking-widest" style={{ color: dayHoje.color }}>
-                    HOJE · {dayHoje.label}
+                  <div className="text-[10px] font-mono tracking-widest" style={{ color: ACCENT }}>
+                    HOJE · {slotHoje.dow} {diaHoje.num}
                   </div>
-                  <h2 className="text-2xl font-bold mt-2">{dayHoje.focus.split(" — ")[0]}</h2>
-                  <div className="text-sm text-[#aaa] mt-1">{dayHoje.focus.split(" — ")[1]}</div>
+                  <h2 className="text-2xl font-bold mt-2">{diaHoje.title}</h2>
+                  <div className="text-sm text-[#aaa] mt-1">{diaHoje.subtitle}</div>
                 </div>
               </div>
               <button
-                onClick={onVerPlano}
+                onClick={onVerCiclo}
                 className="mt-5 px-5 py-3 rounded-xl font-bold text-sm tracking-wide cursor-pointer hover:opacity-90 transition-opacity"
-                style={{ background: dayHoje.color, color: "#000" }}
+                style={{ background: ACCENT, color: "#000" }}
               >
-                Começar treino →
+                Ver treino →
               </button>
             </div>
           )}
@@ -273,11 +257,11 @@ export default function Home({ user, perfil, recomendacao, plano, token, onVerPl
           <div className={cardCls}>
             <div className="text-[10px] font-mono text-[#666] tracking-widest mb-2">ESTA SEMANA</div>
             <div className="flex items-center gap-3">
-              <Ring value={dashboard?.ultimos7 ?? 0} max={recomendacao.dias} color={ACCENT}>
+              <Ring value={dashboard?.ultimos7 ?? 0} max={TREINOS_SEMANA} color={ACCENT}>
                 <span className="text-[#f0ece4]">{dashboard?.ultimos7 ?? 0}</span>
               </Ring>
               <div className="text-xs text-[#888] leading-tight">
-                de <span className="text-[#aaa] font-bold">{recomendacao.dias}</span> treinos
+                de <span className="text-[#aaa] font-bold">{TREINOS_SEMANA}</span> treinos
               </div>
             </div>
           </div>
@@ -298,15 +282,15 @@ export default function Home({ user, perfil, recomendacao, plano, token, onVerPl
 
           <div className={cardCls}>
             <div className="text-[10px] font-mono text-[#666] tracking-widest mb-2">PRÓXIMO</div>
-            {proximoSlot && proximoSlot.session ? (
+            {proximo ? (
               <>
-                <div className="text-xl font-bold">{DIAS[proximoSlot.session as keyof typeof DIAS]?.label}</div>
-                <div className="text-xs text-[#666] mt-1">{proximoSlot.day}</div>
+                <div className="text-xl font-bold">{proximo.dow} {proximo.num}</div>
+                <div className="text-xs text-[#666] mt-1 truncate">{proximo.title}</div>
               </>
             ) : (
               <>
                 <div className="text-xl font-bold text-[#666]">—</div>
-                <div className="text-xs text-[#666] mt-1">sem próximo treino</div>
+                <div className="text-xs text-[#666] mt-1">ciclo encerrado</div>
               </>
             )}
           </div>
@@ -326,7 +310,7 @@ export default function Home({ user, perfil, recomendacao, plano, token, onVerPl
             </div>
             {melhorExercicio && melhorExercicio[1].length > 0 && (
               <div className="text-right">
-                <div className="text-2xl font-bold text-[#c8ff00]">{melhorExercicio[1].at(-1)?.valor} kg</div>
+                <div className="text-2xl font-bold" style={{ color: ACCENT }}>{melhorExercicio[1].at(-1)?.valor} kg</div>
                 <div className="text-[10px] text-[#666] font-mono">última sessão</div>
               </div>
             )}
@@ -345,10 +329,10 @@ export default function Home({ user, perfil, recomendacao, plano, token, onVerPl
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.25 }}
           className="grid grid-cols-2 gap-3"
         >
-          <button onClick={onVerPlano} className={`${cardCls} text-left hover:bg-[#141414] transition-colors cursor-pointer`}>
+          <button onClick={onVerCiclo} className={`${cardCls} text-left hover:bg-[#141414] transition-colors cursor-pointer`}>
             <div className="text-xl mb-1">📋</div>
-            <div className="font-bold text-sm">Plano completo</div>
-            <div className="text-xs text-[#666] mt-1">{plano.days.length} dias · {recomendacao.divisao}</div>
+            <div className="font-bold text-sm">Ciclo completo</div>
+            <div className="text-xs text-[#666] mt-1">{CICLO_INFO.periodo} · 4 semanas</div>
           </button>
           <button onClick={onTreinoLivre} className={`${cardCls} text-left hover:bg-[#141414] transition-colors cursor-pointer`}>
             <div className="text-xl mb-1">🎯</div>

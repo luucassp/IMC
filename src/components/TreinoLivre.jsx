@@ -84,7 +84,7 @@ export default function TreinoLivre({ perfil, token, onVoltar }) {
       const foco = grupos.map((g) => GRUPOS_MUSCULARES.find((gm) => gm.id === g)?.label).join(" · ");
       const resultado = await api.gerarTreinoIA(token, {
         diaId: "LIVRE",
-        diaFoco: `Treino Livre — ${foco}`,
+        diaFoco: `WOD estilo CrossFit (aquecimento + skill/força + metcon) — foco: ${foco}`,
         nivel: perfil.nivel,
         objetivo: perfil.objetivo,
         objetivosExtras: perfil.objetivosExtras,
