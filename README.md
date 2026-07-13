@@ -1,140 +1,112 @@
-# IMC + Treino
+# MAYRENCROSFIT 🏋️
 
-App de treino personalizado que começa pelo cálculo de IMC. O usuário passa por
-um **onboarding** (perfil físico), recebe uma **recomendação** por regras
-(divisão, frequência, reps, descanso, ênfase) e acessa o **plano completo** com
-exercícios, cronômetro de descanso, registro de carga e dashboard de evolução.
+App pessoal de treino **CrossFit**, construído em volta de um ciclo mensal
+programado (atual: **Ciclo Julho 2026** · 07/07 – 02/08 · Estilo Cross do
+Brasil). Roda **100% no navegador** — sem backend, sem banco de dados, sem
+login. Os dados ficam no `localStorage` e podem ser exportados/importados
+entre aparelhos por arquivo JSON.
 
-Projeto em evolução, construído passo a passo a partir da calculadora de IMC
-original (preservada em [`legacy/`](./legacy)).
+**No ar:** https://imc-neon.vercel.app
+
+## Como funciona
+
+1. **Primeira visita** → onboarding rápido (medidas, objetivo, nível,
+   disponibilidade, equipamentos, restrições). Preenche uma vez, fica salvo.
+2. **Home** → treino do dia do ciclo pela **data real** (segunda = descanso
+   total), strip da semana com status, sequência de dias, meta semanal
+   (6 treinos: TER–DOM) e progressão de carga.
+3. **Ciclo de Treinos** → as 4 semanas completas (Volume → Intensidade →
+   Pico → Deload + Testes), cada dia com mobilidade, aquecimento, skill,
+   LPO/força, WOD e notas de pacing. O dia de hoje abre destacado; botão
+   **"Concluir treino"** marca a sessão no histórico.
+4. **Meu Perfil** → IMC com classificação OMS, objetivos e **backup dos
+   dados** (exportar/importar JSON).
 
 ## Funcionalidades
 
-- Onboarding multi-etapas (perfil físico)
+- **Ciclo Julho 2026** completo: 24 sessões datadas em 4 semanas
+  (`src/data/ciclo.js`) — benchmarks Isabel, Grace, 2k remo na semana de testes
+- Treino do dia automático pela data, com status da semana
+  (feito / hoje / perdido / próximo / descanso)
+- Histórico de sessões, sequência (streak) e dashboard de consistência —
+  tudo calculado no navegador
+- Registro de carga × reps por exercício com gráfico de progressão
+- **Treino guiado** passo a passo com cronômetro de descanso
+- **Treino Livre**: escolha 1–4 grupos musculares + equipamento e a IA monta
+  um WOD (requer um backend de IA — ver abaixo; opcional)
+- **Backup**: exporta/importa perfil + histórico + registros em JSON para
+  sincronizar celular ↔ computador
 - Cálculo e classificação de IMC (padrão OMS)
-- Recomendação de treino por regras (objetivo, nível, disponibilidade, IMC)
-- Plano completo: dias, exercícios e progressão (UI do bloco de treino)
-- Cronômetro de descanso por exercício (RF06)
-- Registro de carga × reps por série e histórico de sessões (RF04/RF05)
-- Dashboard de evolução: consistência semanal e progressão de carga (RF07)
-- Trocar o objetivo a qualquer momento (RF08)
-- Ajuste de intensidade por fadiga ("Como você está hoje?")
-- Status da semana e sugestão de remanejar treinos perdidos
-- Persistência local (localStorage), sem necessidade de refazer o onboarding
 
 ## Stack
 
-- **Front-end**: React 18 + Vite (raiz do repositório)
-- **Back-end**: NestJS + Prisma + PostgreSQL (em [`server/`](./server))
-- **Auth**: JWT (e-mail/senha com hash bcrypt) + login com Google (opcional)
-
-> Login, perfil, histórico e registros de carga passam pela API, por usuário.
-> No front, o `localStorage` guarda apenas o token de sessão.
+- **React 18 + Vite 6** · Tailwind CSS v4 · [motion](https://motion.dev)
+- **Sem backend**: `src/lib/api.js` implementa perfil, histórico, registros e
+  dashboard sobre `localStorage`
+- **Site estático** no Vercel (SPA rewrite em `vercel.json`)
+- **Testes**: Vitest — 101 testes na lógica pura
+- **CI**: GitHub Actions (`.github/workflows/ci.yml`) — testes + build a cada
+  push/PR na `main`
 
 ## Como rodar
-
-> Suba o **back-end** primeiro; o front precisa dele para login e perfil.
-
-### Front-end (raiz)
 
 ```bash
 npm install
 npm run dev      # http://localhost:5173
+npm test         # 101 testes (Vitest)
 npm run build    # build de produção em dist/
 ```
 
-Por padrão o front aponta para `http://localhost:3333`. Para mudar, crie um
-`.env.local` na raiz com `VITE_API_URL=...`.
-
-### Back-end (server/)
-
-Precisa de um PostgreSQL. Em dev, suba um local via Docker ou use um banco
-free (Supabase/Neon) — veja [DEPLOY.md](./DEPLOY.md).
-
-```bash
-cd server
-cp .env.example .env          # ajuste DATABASE_URL e JWT_SECRET
-npm install                   # postinstall já roda "prisma generate"
-npm run db:push               # cria as tabelas no banco
-npm run build && npm start    # API em http://localhost:3333
-# ou: npm run start:dev       # com watch
-```
-
-#### Endpoints
-
-| Método | Rota             | Auth | Descrição                          |
-| ------ | ---------------- | ---- | ---------------------------------- |
-| POST   | `/auth/register` | —    | Cria conta → `{ token, user }`     |
-| POST   | `/auth/login`    | —    | Autentica → `{ token, user }`      |
-| POST   | `/auth/google`   | —    | Login com ID token do Google       |
-| GET    | `/auth/me`       | JWT  | Dados do usuário autenticado       |
-| GET    | `/perfil`        | JWT  | Perfil físico (ou `null`)          |
-| PUT    | `/perfil`        | JWT  | Cria/atualiza o perfil físico      |
-| GET    | `/historico`     | JWT  | Sessões concluídas (mais recentes) |
-| POST   | `/historico`     | JWT  | Registra uma sessão concluída      |
-| GET    | `/registros`     | JWT  | Séries registradas (carga × reps)  |
-| POST   | `/registros`     | JWT  | Registra uma série                 |
-| GET    | `/dashboard`     | JWT  | Agregados: frequência e progressão |
+Não precisa de mais nada — sem banco, sem variáveis de ambiente.
 
 ## Estrutura
 
 ```
 src/
   components/
-    Auth.jsx         # tela de login / registro
-    Onboarding.jsx   # questionário multi-etapas (perfil físico)
-    Resultado.jsx    # IMC + classificação + recomendação + trocar objetivo
-    Plano.jsx        # plano completo (treino, progressão, semana, evolução)
-    RestTimer.jsx    # cronômetro de descanso flutuante
-    MiniGrafico.jsx  # gráfico de barras em SVG (sem dependências)
+    Home.tsx          # dashboard: treino do dia, semana, stats, menu
+    Ciclo.jsx         # ciclo completo (4 semanas) com concluir treino
+    Onboarding.jsx    # questionário multi-etapas (primeira visita)
+    Resultado.jsx     # perfil: IMC, objetivos, backup exportar/importar
+    Plano.jsx         # plano de musculação legado + aba Evolução (gráficos)
+    TreinoLivre.jsx   # WOD por grupo muscular via IA (opcional)
+    GuidedWorkout.jsx # treino guiado passo a passo
+    RestTimer.jsx     # cronômetro de descanso flutuante
+    MiniGrafico.jsx   # gráfico de barras em SVG
   data/
-    onboarding.js    # opções dos campos (objetivos, níveis, equipamentos...)
-    planos.js        # biblioteca de dias de treino + templates de divisão
+    ciclo.js          # ★ Ciclo Julho 2026 — semanas, dias e blocos
+    planos.js         # biblioteca de treinos de musculação (legado)
+    onboarding.js     # opções dos campos do questionário
   lib/
-    api.js           # cliente HTTP da API (auth + perfil)
-    imc.js           # cálculo e classificação de IMC (padrão OMS)
-    recomendacao.js  # motor de recomendação por regras
-    plano.js         # monta o plano e a semana a partir da recomendação
-    storage.js       # token de sessão no localStorage
-    tempo.js         # parsing/format de descanso
-    fadiga.js        # ajuste de intensidade ("como você está hoje?")
-    semana.js        # status da semana + sugestão de remanejamento
-  App.jsx
-  main.jsx
-legacy/              # calculadora de IMC original (HTML/CSS/JS puro)
+    api.js            # ★ store local (localStorage) + backup + cliente IA
+    ciclo.js          # ★ sessão por data + status da semana do ciclo
+    imc.js            # cálculo e classificação de IMC
+    semana.js         # status semanal do plano legado
+    fadiga.js         # ajuste de intensidade ("como você está hoje?")
+    recomendacao.js   # motor de recomendação por regras (legado)
+    plano.js          # montagem do plano de musculação (legado)
+    tempo.js          # parsing/format de tempo de descanso
+    __tests__/        # 101 testes (Vitest)
 
-server/
-  prisma/
-    schema.prisma    # modelos User, Perfil, Historico, Registro
-  render.yaml        # blueprint de deploy (Render)
-  src/
-    auth/            # registro, login, JWT (estratégia, guard, decorator)
-    perfil/          # CRUD do perfil físico (protegido por JWT)
-    treino/          # histórico, registros de carga e dashboard (JWT)
-    prisma/          # PrismaService/Module
-    main.ts          # bootstrap (CORS + ValidationPipe)
-    app.module.ts
+server/               # backend NestJS legado — NÃO é necessário.
+                      # Útil apenas para reativar a IA do Treino Livre
+                      # (OpenAI/Anthropic/Gemini) via VITE_API_URL.
 ```
 
-### Login com Google (opcional)
+## IA do Treino Livre (opcional)
 
-1. Crie um **OAuth Client ID** (tipo "Web application") em
-   [Google Cloud Console](https://console.cloud.google.com/apis/credentials),
-   autorizando a origem `http://localhost:5173`.
-2. Back: defina `GOOGLE_CLIENT_ID` no `server/.env`.
-3. Front: crie um `.env.local` na raiz com `VITE_GOOGLE_CLIENT_ID=` (o **mesmo** id).
+O app funciona completo sem isso. Para ativar a geração de WOD por IA:
 
-Sem essas variáveis o app funciona normalmente por e-mail/senha; o botão do
-Google só aparece quando `VITE_GOOGLE_CLIENT_ID` está definido.
+1. Suba o `server/` em qualquer host Node (define `OPENAI_API_KEY`,
+   `ANTHROPIC_API_KEY` **ou** `GEMINI_API_KEY`)
+2. No front, crie `.env.local` com `VITE_API_URL=https://seu-backend`
 
-## Deploy
+Sem `VITE_API_URL`, o botão do Treino Livre mostra um aviso amigável.
 
-Front no Netlify, backend no Render, banco no Supabase/Neon.
-Passo a passo em [DEPLOY.md](./DEPLOY.md).
+## Próximo ciclo
 
-## Próximos passos
-
-- **Login com Apple**: requer conta paga no Apple Developer, chave `.p8` e
-  geração do *client secret* (JWT) no servidor — pendente desses pré-requisitos.
-- Substituir as regras fixas por personalização adaptativa.
-- Testes automatizados (unit/e2e).
+Quando o ciclo de agosto sair, é só adicionar as semanas em
+`src/data/ciclo.js` seguindo o mesmo formato (`date`, `dow`, `title`,
+`blocks`) — a Home e o Ciclo passam a usar as novas datas automaticamente.
+A semana 4 do ciclo atual registra os benchmarks que viram base de % do
+ciclo seguinte.
