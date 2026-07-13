@@ -1,4 +1,6 @@
+import { useRef, useState } from "react";
 import { OBJETIVOS, NIVEIS } from "../data/onboarding.js";
+import { api } from "../lib/api.js";
 
 const accent = "#c8ff00";
 
@@ -34,6 +36,35 @@ function Linha({ label, valor }) {
 }
 
 export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano, onTrocarObjetivo, onReiniciar, onVoltar, onSair }) {
+  const inputArquivo = useRef(null);
+  const [msgBackup, setMsgBackup] = useState("");
+
+  const exportar = async () => {
+    const dados = await api.exportarDados();
+    const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mayrencrosfit-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setMsgBackup("Backup exportado ✓");
+  };
+
+  const importar = async (e) => {
+    const arquivo = e.target.files?.[0];
+    if (!arquivo) return;
+    try {
+      const dados = JSON.parse(await arquivo.text());
+      await api.importarDados(dados);
+      setMsgBackup("Dados importados ✓ Recarregando…");
+      setTimeout(() => window.location.reload(), 800);
+    } catch (err) {
+      setMsgBackup(err.message || "Arquivo inválido.");
+    }
+    e.target.value = "";
+  };
+
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 20px 60px" }}>
       {onVoltar && (
@@ -266,6 +297,44 @@ export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano
       >
         Ver plano completo →
       </button>
+      {/* Backup local: exportar/importar dados entre aparelhos */}
+      <div style={{
+        background: "linear-gradient(145deg, #111318 0%, #0d0d0f 100%)",
+        border: "1px solid rgba(255,255,255,0.04)",
+        borderRadius: 12,
+        padding: "18px 20px",
+        marginBottom: 12,
+      }}>
+        <div style={{ fontFamily: "monospace", fontSize: 10, color: accent, letterSpacing: 3, marginBottom: 8 }}>
+          BACKUP DOS DADOS
+        </div>
+        <p style={{ fontSize: 12, color: "#777", lineHeight: 1.6, margin: "0 0 14px" }}>
+          Seus treinos ficam salvos neste navegador. Exporte um arquivo pra guardar ou levar pra outro aparelho, e importe lá.
+        </p>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button
+            type="button"
+            onClick={exportar}
+            style={{ flex: 1, background: "#1a1a1a", border: "1px solid #333", color: "#ccc", borderRadius: 8, padding: "12px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+          >
+            ⬇ Exportar
+          </button>
+          <button
+            type="button"
+            onClick={() => inputArquivo.current?.click()}
+            style={{ flex: 1, background: "#1a1a1a", border: "1px solid #333", color: "#ccc", borderRadius: 8, padding: "12px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+          >
+            ⬆ Importar
+          </button>
+          <input ref={inputArquivo} type="file" accept="application/json,.json" onChange={importar} style={{ display: "none" }} />
+        </div>
+        {msgBackup && (
+          <div style={{ fontSize: 12, color: msgBackup.includes("✓") ? "#00E5A0" : "#ff6b6b", marginTop: 10, fontFamily: "monospace", textAlign: "center" }}>
+            {msgBackup}
+          </div>
+        )}
+      </div>
+
       <button
         type="button"
         onClick={onReiniciar}

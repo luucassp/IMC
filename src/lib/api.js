@@ -86,6 +86,27 @@ export const api = {
     }
   },
 
+  // Backup completo para sincronizar entre aparelhos (arquivo JSON).
+  exportarDados: async () => ({
+    app: "mayrencrosfit",
+    versao: 1,
+    exportadoEm: new Date().toISOString(),
+    perfil: ler(K_PERFIL, null),
+    historico: ler(K_HISTORICO, []),
+    registros: ler(K_REGISTROS, []),
+  }),
+  importarDados: async (dados) => {
+    if (!dados || typeof dados !== "object" || dados.app !== "mayrencrosfit") {
+      throw new Error("Arquivo inválido — exporte o backup pelo próprio app.");
+    }
+    if (!Array.isArray(dados.historico) || !Array.isArray(dados.registros)) {
+      throw new Error("Backup incompleto — histórico ou registros ausentes.");
+    }
+    if (dados.perfil) salvar(K_PERFIL, dados.perfil);
+    salvar(K_HISTORICO, dados.historico);
+    salvar(K_REGISTROS, dados.registros);
+  },
+
   getHistorico: async () => ler(K_HISTORICO, []),
   addHistorico: async (_token, entrada) => inserir(K_HISTORICO, entrada),
 
