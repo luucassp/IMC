@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CICLO, CICLO_INFO } from "../data/ciclo.js";
-import { isoLocal } from "../lib/ciclo.js";
+import { isoLocal, diaPorData, proximoDia } from "../lib/ciclo.js";
 import { api } from "../lib/api.js";
 
 const ACC = "#ff8c1a";
@@ -41,7 +41,8 @@ function Dia({ dia, aberto, hoje, feito, podeConcluir, onToggle, onConcluir }) {
       <button
         type="button"
         onClick={onToggle}
-        style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", cursor: "pointer", background: "none", border: "none", color: "inherit", textAlign: "left" }}
+        className="ciclo-day-head"
+        style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", cursor: "pointer", background: "none", border: "none", color: "inherit", textAlign: "left", transition: "background .15s" }}
       >
         <div style={{ fontWeight: 800, fontSize: 15, color: feito ? "#3ecf8e" : ACC, minWidth: 52, lineHeight: 1.2 }}>
           {dia.dow}<br />{dia.num}
@@ -81,8 +82,10 @@ function Dia({ dia, aberto, hoje, feito, podeConcluir, onToggle, onConcluir }) {
 
 export default function Ciclo({ token, onVoltar }) {
   const hoje = isoLocal(new Date());
+  // Dia em destaque: hoje se for dia de treino; senão o próximo (ou o 1º do ciclo).
+  const diaFoco = diaPorData(hoje) ? hoje : (proximoDia(hoje)?.date ?? CICLO[0].dias[0].date);
   const [historico, setHistorico] = useState([]);
-  const [abertos, setAbertos] = useState(() => new Set([hoje]));
+  const [abertos, setAbertos] = useState(() => new Set([diaFoco]));
   const hojeRef = useRef(null);
 
   useEffect(() => {
@@ -144,7 +147,7 @@ export default function Ciclo({ token, onVoltar }) {
             <p style={{ color: "#9a9da8", fontSize: 13, marginBottom: 12 }}>{semana.sub}</p>
 
             {semana.dias.map((dia) => (
-              <div key={dia.date} ref={dia.date === hoje ? hojeRef : null}>
+              <div key={dia.date} ref={dia.date === diaFoco ? hojeRef : null}>
                 <Dia
                   dia={dia}
                   aberto={abertos.has(dia.date)}
