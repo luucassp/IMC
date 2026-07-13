@@ -11,6 +11,7 @@ const Onboarding = lazy(() => import("./components/Onboarding.jsx"));
 const Resultado = lazy(() => import("./components/Resultado.jsx"));
 const Plano = lazy(() => import("./components/Plano.jsx"));
 const TreinoLivre = lazy(() => import("./components/TreinoLivre.jsx"));
+const Ciclo = lazy(() => import("./components/Ciclo.jsx"));
 
 // Normaliza os campos do onboarding para os tipos esperados pela API.
 function perfilParaApi(p) {
@@ -135,7 +136,9 @@ export default function App() {
 
   let conteudo;
 
-  if (view === "plano") {
+  if (view === "ciclo") {
+    conteudo = <Ciclo token={token} onVoltar={() => setView("home")} />;
+  } else if (view === "plano") {
     conteudo = <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} />;
   } else if (view === "evolucao") {
     conteudo = <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token={token} onVoltar={() => setView("home")} tabInicial="historico" />;
@@ -159,11 +162,8 @@ export default function App() {
     conteudo = (
       <Home
         user={user}
-        perfil={perfilUI}
-        recomendacao={recomendacao}
-        plano={plano}
         token={token}
-        onVerPlano={() => setView("plano")}
+        onVerCiclo={() => setView("ciclo")}
         onVerPerfil={() => setView("perfil")}
         onVerEvolucao={() => setView("evolucao")}
         onTreinoLivre={() => setView("treino-livre")}
