@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Geist", system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+}
+
 :root {
   --bg: #080808;
   --bg-card: #0f0f0f;
@@ -10,9 +15,9 @@
   --text: #f0ece4;
   --text-dim: #888;
   --text-faint: #555;
-  --accent: #c8ff00;
-  --accent-dim: rgba(200, 255, 0, 0.12);
-  --accent-glow: 0 0 24px rgba(200, 255, 0, 0.18), 0 0 64px rgba(200, 255, 0, 0.06);
+  --accent: #ff8c1a;
+  --accent-dim: rgba(255, 140, 26, 0.12);
+  --accent-glow: 0 0 24px rgba(255, 140, 26, 0.18), 0 0 64px rgba(255, 140, 26, 0.06);
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.04);
   --shadow-float: 0 8px 32px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
@@ -51,7 +56,7 @@ body,
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: "Poppins", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.55;
 }
 

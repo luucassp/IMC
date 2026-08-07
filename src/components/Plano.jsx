@@ -9,8 +9,9 @@ import { buscarImagemExercicio } from "../lib/wger.js";
 import RestTimer from "./RestTimer.jsx";
 import MiniGrafico from "./MiniGrafico.jsx";
 import GuidedWorkout from "./GuidedWorkout.jsx";
+import { ACCENT, SUCCESS } from "../lib/theme.js";
 
-const accent = "#c8ff00";
+const accent = ACCENT;
 
 function mesmoDia(isoA, isoB) {
   return new Date(isoA).toDateString() === new Date(isoB).toDateString();
@@ -21,8 +22,8 @@ function formatarData(iso) {
 }
 
 const STATUS_SEMANA = {
-  feito: { label: "✓ feito", cor: "#00E5A0" },
-  hoje: { label: "hoje", cor: "#c8ff00" },
+  feito: { label: "✓ feito", cor: SUCCESS },
+  hoje: { label: "hoje", cor: accent },
   perdido: { label: "perdido", cor: "#FF6B35" },
   proximo: { label: "próximo", cor: "#555" },
   descanso: { label: "descanso", cor: "#333" },
@@ -216,7 +217,7 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar, ta
   const planejamento = planejarSemana(schedule, historico);
 
   return (
-    <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#f0ece4" }}>
+    <div style={{ background: `radial-gradient(60% 40% at 15% 0%, ${accent}12, transparent 60%), #0a0a0a`, minHeight: "100vh", color: "#f0ece4" }}>
       {/* Header */}
       <div style={{ background: "#0f0f0f", borderBottom: "1px solid #1e1e1e", padding: "20px 20px 0" }}>
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
@@ -694,7 +695,7 @@ export default function Plano({ plano, perfil, recomendacao, token, onVoltar, ta
       </div>
 
       {descanso && (
-        <RestTimer segundos={descanso.segundos} chave={descanso.chave} onFechar={() => setDescanso(null)} />
+        <RestTimer segundos={descanso.segundos} chave={descanso.chave} cor={currentDay.color} onFechar={() => setDescanso(null)} />
       )}
 
       {guidedMode && (

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "motion/react";
 import {
   SEXOS,
   OBJETIVOS,
@@ -7,6 +8,8 @@ import {
   EQUIPAMENTOS,
   RESTRICOES,
 } from "../data/onboarding.js";
+import { ACCENT } from "../lib/theme.js";
+import { fadeUpVariants } from "../lib/motion.js";
 
 const PERFIL_INICIAL = {
   idade: "",
@@ -21,7 +24,7 @@ const PERFIL_INICIAL = {
   restricoes: [],
 };
 
-const accent = "#c8ff00";
+const accent = ACCENT;
 
 const s = {
   campoLabel: {
@@ -300,7 +303,14 @@ export default function Onboarding({ onConcluir, erro }) {
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 20px 60px" }}>
       {/* Barra de progresso */}
-      <div style={{ marginBottom: 28 }}>
+      <motion.div
+        key={`bar-${etapa}`}
+        custom={0}
+        variants={fadeUpVariants}
+        initial="hidden"
+        animate="show"
+        style={{ marginBottom: 28 }}
+      >
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
           <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 2 }}>
             PASSO {etapa + 1}/{etapas.length}
@@ -312,18 +322,22 @@ export default function Onboarding({ onConcluir, erro }) {
         <div style={{ height: 4, background: "#1a1a1a", borderRadius: 4, overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${progresso}%`, background: accent, transition: "width 0.3s" }} />
         </div>
-      </div>
+      </motion.div>
 
       {/* Cabeçalho da etapa */}
-      <h1 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 4px", letterSpacing: -0.5 }}>
-        {etapaAtual.titulo}
-      </h1>
-      <p style={{ fontSize: 14, color: "#666", margin: "0 0 28px", fontFamily: "monospace" }}>
-        {etapaAtual.sub}
-      </p>
+      <motion.div key={`head-${etapa}`} custom={1} variants={fadeUpVariants} initial="hidden" animate="show">
+        <h1 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 4px", letterSpacing: -0.5 }}>
+          {etapaAtual.titulo}
+        </h1>
+        <p style={{ fontSize: 14, color: "#666", margin: "0 0 28px", fontFamily: "monospace" }}>
+          {etapaAtual.sub}
+        </p>
+      </motion.div>
 
       {/* Conteúdo */}
-      <div style={{ marginBottom: 32 }}>{etapaAtual.render()}</div>
+      <motion.div key={`content-${etapa}`} custom={2} variants={fadeUpVariants} initial="hidden" animate="show" style={{ marginBottom: 32 }}>
+        {etapaAtual.render()}
+      </motion.div>
 
       {erro && (
         <div style={{ background: "#FF3B3B15", border: "1px solid #FF3B3B40", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#ff8c8c", marginBottom: 12 }}>
@@ -332,7 +346,7 @@ export default function Onboarding({ onConcluir, erro }) {
       )}
 
       {/* Navegação */}
-      <div style={{ display: "flex", gap: 12 }}>
+      <motion.div key={`nav-${etapa}`} custom={3} variants={fadeUpVariants} initial="hidden" animate="show" style={{ display: "flex", gap: 12 }}>
         {etapa > 0 && (
           <button
             type="button"
@@ -369,7 +383,7 @@ export default function Onboarding({ onConcluir, erro }) {
         >
           {ehUltima ? "Ver meu resultado" : "Continuar"}
         </button>
-      </div>
+      </motion.div>
     </div>
   );
 }

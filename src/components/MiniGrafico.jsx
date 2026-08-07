@@ -1,6 +1,8 @@
+import { ACCENT } from "../lib/theme.js";
+
 // Gráfico de barras leve em SVG (sem dependências externas).
 // dados: [{ label, valor }]. cor opcional.
-export default function MiniGrafico({ dados, cor = "#c8ff00", sufixo = "" }) {
+export default function MiniGrafico({ dados, cor = ACCENT, sufixo = "" }) {
   if (!dados?.length) return null;
   const max = Math.max(...dados.map((d) => d.valor), 1);
   const alturaMax = 90;

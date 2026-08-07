@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
 import { OBJETIVOS, NIVEIS } from "../data/onboarding.js";
 import { api } from "../lib/api.js";
+import { ACCENT, SUCCESS } from "../lib/theme.js";
 
-const accent = "#c8ff00";
+const accent = ACCENT;
 
 function rotulo(lista, id) {
   return lista.find((x) => x.id === id)?.label ?? id;
@@ -329,7 +330,7 @@ export default function Resultado({ perfil, imc, faixa, recomendacao, onVerPlano
           <input ref={inputArquivo} type="file" accept="application/json,.json" onChange={importar} style={{ display: "none" }} />
         </div>
         {msgBackup && (
-          <div style={{ fontSize: 12, color: msgBackup.includes("✓") ? "#00E5A0" : "#ff6b6b", marginTop: 10, fontFamily: "monospace", textAlign: "center" }}>
+          <div style={{ fontSize: 12, color: msgBackup.includes("✓") ? SUCCESS : "#ff6b6b", marginTop: 10, fontFamily: "monospace", textAlign: "center" }}>
             {msgBackup}
           </div>
         )}

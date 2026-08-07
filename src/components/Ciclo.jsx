@@ -1,28 +1,31 @@
 import { useEffect, useRef, useState } from "react";
+import { motion } from "motion/react";
 import { CICLO, CICLO_INFO } from "../data/ciclo.js";
 import { isoLocal, diaPorData, proximoDia } from "../lib/ciclo.js";
 import { api } from "../lib/api.js";
 import BlocoTreino from "./BlocoTreino.jsx";
+import { ACCENT, SUCCESS, cardStyle } from "../lib/theme.js";
+import { fadeUpVariants } from "../lib/motion.js";
 
-const ACC = "#ff8c1a";
+const ACC = ACCENT;
 
 function Dia({ dia, aberto, hoje, feito, podeConcluir, onToggle, onConcluir }) {
   return (
-    <div style={{ background: "#17181d", border: `1px solid ${hoje ? ACC : feito ? "#3ecf8e55" : "#2a2d36"}`, borderRadius: 12, marginBottom: 10, overflow: "hidden" }}>
+    <div style={{ ...cardStyle({ padding: 0, radius: 12 }), border: `1px solid ${hoje ? ACC : feito ? `${SUCCESS}55` : "#2a2d36"}`, marginBottom: 10, overflow: "hidden" }}>
       <button
         type="button"
         onClick={onToggle}
         className="ciclo-day-head"
         style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", cursor: "pointer", background: "none", border: "none", color: "inherit", textAlign: "left", transition: "background .15s" }}
       >
-        <div style={{ fontWeight: 800, fontSize: 15, color: feito ? "#3ecf8e" : ACC, minWidth: 52, lineHeight: 1.2 }}>
+        <div style={{ fontWeight: 800, fontSize: 15, color: feito ? SUCCESS : ACC, minWidth: 52, lineHeight: 1.2 }}>
           {dia.dow}<br />{dia.num}
         </div>
         <div style={{ flex: 1 }}>
           <strong style={{ fontSize: 15, fontWeight: 600, display: "block" }}>{dia.title}</strong>
           <small style={{ color: "#9a9da8", fontSize: 12 }}>{dia.subtitle}</small>
         </div>
-        {feito && <span style={{ color: "#3ecf8e", fontFamily: "monospace", fontSize: 11, fontWeight: 700 }}>✓ FEITO</span>}
+        {feito && <span style={{ color: SUCCESS, fontFamily: "monospace", fontSize: 11, fontWeight: 700 }}>✓ FEITO</span>}
         {hoje && !feito && <span style={{ color: ACC, fontFamily: "monospace", fontSize: 11, fontWeight: 700 }}>HOJE</span>}
         <span style={{ color: "#9a9da8", transform: aberto ? "rotate(90deg)" : "none", transition: "transform .2s", fontSize: 12 }}>▶</span>
       </button>
@@ -41,7 +44,7 @@ function Dia({ dia, aberto, hoje, feito, podeConcluir, onToggle, onConcluir }) {
             </button>
           )}
           {feito && (
-            <div style={{ marginTop: 16, textAlign: "center", color: "#3ecf8e", fontFamily: "monospace", fontSize: 12, fontWeight: 700 }}>
+            <div style={{ marginTop: 16, textAlign: "center", color: SUCCESS, fontFamily: "monospace", fontSize: 12, fontWeight: 700 }}>
               ✓ Treino concluído
             </div>
           )}
@@ -87,9 +90,12 @@ export default function Ciclo({ token, onVoltar }) {
   };
 
   return (
-    <div style={{ background: "#0e0f12", minHeight: "100vh", color: "#e8e8ea", paddingBottom: 60 }}>
+    <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#e8e8ea", paddingBottom: 60 }}>
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "0 16px" }}>
-        <header style={{ padding: "28px 0 20px", borderBottom: `2px solid ${ACC}` }}>
+        <motion.header
+          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+          style={{ padding: "28px 0 20px", borderBottom: `2px solid ${ACC}` }}
+        >
           <button
             type="button"
             onClick={onVoltar}
@@ -110,10 +116,17 @@ export default function Ciclo({ token, onVoltar }) {
               </span>
             ))}
           </div>
-        </header>
+        </motion.header>
 
-        {CICLO.map((semana) => (
-          <div key={semana.id} style={{ marginTop: 28 }}>
+        {CICLO.map((semana, si) => (
+          <motion.div
+            key={semana.id}
+            custom={si + 1}
+            variants={fadeUpVariants}
+            initial="hidden"
+            animate="show"
+            style={{ marginTop: 28 }}
+          >
             <h2 style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: 2, color: ACC, fontWeight: 700, marginBottom: 4 }}>{semana.titulo}</h2>
             <p style={{ color: "#9a9da8", fontSize: 13, marginBottom: 12 }}>{semana.sub}</p>
 
@@ -136,7 +149,7 @@ export default function Ciclo({ token, onVoltar }) {
                 {semana.descanso}
               </div>
             )}
-          </div>
+          </motion.div>
         ))}
 
         <footer style={{ marginTop: 40, textAlign: "center", color: "#9a9da8", fontSize: 12 }}>

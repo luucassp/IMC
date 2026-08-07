@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { motion } from "motion/react";
 import { api } from "../lib/api.js";
 import { parseDescanso } from "../lib/tempo.js";
 import RestTimer from "./RestTimer.jsx";
 import GuidedWorkout from "./GuidedWorkout.jsx";
+import { ACCENT } from "../lib/theme.js";
+import { fadeUpVariants } from "../lib/motion.js";
 
-const accent = "#c8ff00";
+const accent = ACCENT;
 
 const GRUPOS_MUSCULARES = [
   { id: "peito", label: "Peito", icon: "💪" },
@@ -125,11 +128,13 @@ export default function TreinoLivre({ perfil, token, onVoltar }) {
             ← Voltar
           </button>
 
-          <div style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, marginBottom: 4 }}>TREINO LIVRE</div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, marginBottom: 8, letterSpacing: -1 }}>O que quer treinar hoje?</h1>
-          <p style={{ fontSize: 13, color: "#666", marginBottom: 28, fontFamily: "monospace" }}>Selecione 1 a 4 grupos musculares</p>
+          <motion.div custom={0} variants={fadeUpVariants} initial="hidden" animate="show">
+            <div style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, marginBottom: 4 }}>TREINO LIVRE</div>
+            <h1 style={{ fontSize: 26, fontWeight: 700, marginBottom: 8, letterSpacing: -1 }}>O que quer treinar hoje?</h1>
+            <p style={{ fontSize: 13, color: "#666", marginBottom: 28, fontFamily: "monospace" }}>Selecione 1 a 4 grupos musculares</p>
+          </motion.div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 32 }}>
+          <motion.div custom={1} variants={fadeUpVariants} initial="hidden" animate="show" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 32 }}>
             {GRUPOS_MUSCULARES.map((g) => {
               const ativo = grupos.includes(g.id);
               return (
@@ -158,10 +163,11 @@ export default function TreinoLivre({ perfil, token, onVoltar }) {
                 </button>
               );
             })}
-          </div>
+          </motion.div>
 
-          <div style={{ fontFamily: "monospace", fontSize: 10, color: "#555", letterSpacing: 2, marginBottom: 12 }}>EQUIPAMENTO DISPONÍVEL</div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 32 }}>
+          <motion.div custom={2} variants={fadeUpVariants} initial="hidden" animate="show">
+            <div style={{ fontFamily: "monospace", fontSize: 10, color: "#555", letterSpacing: 2, marginBottom: 12 }}>EQUIPAMENTO DISPONÍVEL</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 32 }}>
             {EQUIPAMENTOS.map((eq) => {
               const ativo = equipamento === eq.id;
               return (
@@ -184,8 +190,10 @@ export default function TreinoLivre({ perfil, token, onVoltar }) {
                 </button>
               );
             })}
-          </div>
+            </div>
+          </motion.div>
 
+          <motion.div custom={3} variants={fadeUpVariants} initial="hidden" animate="show">
           <button
             type="button"
             onClick={gerarTreino}
@@ -209,6 +217,7 @@ export default function TreinoLivre({ perfil, token, onVoltar }) {
           {erro && (
             <div style={{ fontSize: 12, color: "#ff6b6b", marginTop: 12, textAlign: "center", fontFamily: "monospace" }}>{erro}</div>
           )}
+          </motion.div>
         </div>
       </div>
     );
@@ -324,7 +333,7 @@ export default function TreinoLivre({ perfil, token, onVoltar }) {
         </div>
       </div>
 
-      {descanso && <RestTimer segundos={descanso.segundos} chave={descanso.chave} onFechar={() => setDescanso(null)} />}
+      {descanso && <RestTimer segundos={descanso.segundos} chave={descanso.chave} cor={accent} onFechar={() => setDescanso(null)} />}
 
       {guidedMode && exercicios && (
         <GuidedWorkout

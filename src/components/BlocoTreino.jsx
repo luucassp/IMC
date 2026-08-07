@@ -1,8 +1,10 @@
 // Renderiza um bloco de treino ({ titulo, extra?, itens?, texto? } ou { nota }).
 // Compartilhado entre o Ciclo e a Biblioteca de WODs.
 
-const ACC = "#ff8c1a";
-const ACC2 = "#ffb14d";
+import { ACCENT, ACCENT_LIGHT, cardStyle } from "../lib/theme.js";
+
+const ACC = ACCENT;
+const ACC2 = ACCENT_LIGHT;
 
 export default function BlocoTreino({ blk }) {
   if (blk.nota) {
@@ -14,7 +16,7 @@ export default function BlocoTreino({ blk }) {
   }
 
   return (
-    <div style={{ marginTop: 14 }}>
+    <div style={{ ...cardStyle({ padding: "12px 14px", radius: 8 }), marginTop: 14 }}>
       <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 1.5, color: ACC2, fontWeight: 700, marginBottom: 6 }}>
         {blk.titulo}
         {blk.extra && <span style={{ color: "#9a9da8", fontWeight: 500, textTransform: "none", letterSpacing: 0 }}> · {blk.extra}</span>}

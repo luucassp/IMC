@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { formatarTempo } from "../lib/tempo.js";
-
-const accent = "#c8ff00";
+import { ACCENT, SUCCESS } from "../lib/theme.js";
 
 // Cronômetro de descanso flutuante. `chave` reinicia a contagem quando muda.
-export default function RestTimer({ segundos, chave, onFechar }) {
+// `cor` deixa o timer herdar o acento de quem o chamou, como o GuidedWorkout já faz.
+export default function RestTimer({ segundos, chave, onFechar, cor: corProp = ACCENT }) {
   const [restante, setRestante] = useState(segundos);
   const [pausado, setPausado] = useState(false);
   const intervaloRef = useRef(null);
@@ -31,7 +31,7 @@ export default function RestTimer({ segundos, chave, onFechar }) {
   }, [pausado, segundos, chave]);
 
   const acabou = restante === 0;
-  const cor = acabou ? "#00E5A0" : accent;
+  const cor = acabou ? SUCCESS : corProp;
 
   return (
     <div
@@ -42,6 +42,7 @@ export default function RestTimer({ segundos, chave, onFechar }) {
         bottom: 0,
         background: "#111",
         borderTop: `2px solid ${cor}`,
+        borderRadius: "12px 12px 0 0",
         padding: "14px 20px",
         display: "flex",
         alignItems: "center",
@@ -49,6 +50,7 @@ export default function RestTimer({ segundos, chave, onFechar }) {
         maxWidth: 720,
         margin: "0 auto",
         boxShadow: "0 -8px 24px rgba(0,0,0,0.5)",
+        transition: "border-color 0.3s",
       }}
     >
       <div style={{ fontFamily: "monospace", fontSize: 32, fontWeight: 700, color: cor, minWidth: 80 }}>

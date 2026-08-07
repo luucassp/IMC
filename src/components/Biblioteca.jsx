@@ -1,16 +1,18 @@
 import { useState } from "react";
+import { motion } from "motion/react";
 import { WODS } from "../data/wods.js";
 import { CICLO_INFO } from "../data/ciclo.js";
 import { api } from "../lib/api.js";
 import BlocoTreino from "./BlocoTreino.jsx";
+import { ACCENT, SUCCESS, cardStyle } from "../lib/theme.js";
 
-const ACC = "#ff8c1a";
+const ACC = ACCENT;
 
 const TAGS = Object.fromEntries(CICLO_INFO.tags.map((t) => [t.id, t]));
 
 function Wod({ wod, aberto, registrado, onToggle, onRegistrar }) {
   return (
-    <div style={{ background: "#17181d", border: `1px solid ${registrado ? "#3ecf8e55" : "#2a2d36"}`, borderRadius: 12, marginBottom: 10, overflow: "hidden" }}>
+    <div style={{ ...cardStyle({ padding: 0, radius: 12 }), border: `1px solid ${registrado ? `${SUCCESS}55` : "#2a2d36"}`, marginBottom: 10, overflow: "hidden" }}>
       <button
         type="button"
         onClick={onToggle}
@@ -43,7 +45,7 @@ function Wod({ wod, aberto, registrado, onToggle, onRegistrar }) {
           </div>
 
           {registrado ? (
-            <div style={{ marginTop: 14, textAlign: "center", color: "#3ecf8e", fontFamily: "monospace", fontSize: 12, fontWeight: 700 }}>
+            <div style={{ marginTop: 14, textAlign: "center", color: SUCCESS, fontFamily: "monospace", fontSize: 12, fontWeight: 700 }}>
               ✓ Registrado hoje
             </div>
           ) : (
@@ -83,9 +85,12 @@ export default function Biblioteca({ token, onVoltar }) {
   };
 
   return (
-    <div style={{ background: "#0e0f12", minHeight: "100vh", color: "#e8e8ea", paddingBottom: 60 }}>
+    <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#e8e8ea", paddingBottom: 60 }}>
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "0 16px" }}>
-        <header style={{ padding: "28px 0 20px", borderBottom: `2px solid ${ACC}` }}>
+        <motion.header
+          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+          style={{ padding: "28px 0 20px", borderBottom: `2px solid ${ACC}` }}
+        >
           <button
             type="button"
             onClick={onVoltar}
@@ -99,9 +104,12 @@ export default function Biblioteca({ token, onVoltar }) {
           <p style={{ color: "#9a9da8", fontSize: 13, marginTop: 4 }}>
             {WODS.length} treinos guardados como fonte · puxe em qualquer dia fora do ciclo
           </p>
-        </header>
+        </motion.header>
 
-        <div style={{ marginTop: 24 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }}
+          style={{ marginTop: 24 }}
+        >
           {WODS.map((wod) => (
             <Wod
               key={wod.id}
@@ -112,7 +120,7 @@ export default function Biblioteca({ token, onVoltar }) {
               onRegistrar={() => registrar(wod)}
             />
           ))}
-        </div>
+        </motion.div>
 
         <footer style={{ marginTop: 40, textAlign: "center", color: "#9a9da8", fontSize: 12 }}>
           <p><strong style={{ color: ACC }}>{CICLO_INFO.nome}</strong> · Biblioteca de referência</p>

@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { api } from "../lib/api.js";
 import { semanaDoCiclo, isoLocal, proximoDia } from "../lib/ciclo.js";
 import { CICLO_INFO } from "../data/ciclo.js";
+import { ACCENT } from "../lib/theme.js";
 
 type Historico = { id: string; data: string; diaId: string; diaLabel: string; foco: string };
 type Dashboard = {
@@ -22,7 +23,6 @@ type Props = {
   onTreinoLivre: () => void;
 };
 
-const ACCENT = "#ff8c1a";
 const TREINOS_SEMANA = 6; // TER–DOM · segunda = descanso
 
 function saudacao() {
@@ -59,6 +59,46 @@ function Ring({ value, max, color, size = 72, thickness = 7, children }: {
     </div>
   );
 }
+
+// Badge com ícone vetorial e fundo semântico translúcido (mesma convenção
+// de tinta ${cor}26 já usada nas tags de Ciclo/Biblioteca).
+function IconBadge({ children, color = ACCENT }: { children: React.ReactNode; color?: string }) {
+  return (
+    <div
+      className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+      style={{ background: `${color}26`, color }}
+    >
+      {children}
+    </div>
+  );
+}
+
+const iconProps = {
+  width: 20,
+  height: 20,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+
+const TargetIcon = () => (
+  <svg {...iconProps}><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>
+);
+const AwardIcon = () => (
+  <svg {...iconProps}><circle cx="12" cy="8" r="6" /><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" /></svg>
+);
+const FlameIcon = () => (
+  <svg {...iconProps}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" /></svg>
+);
+const CalendarIcon = () => (
+  <svg {...iconProps}><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18M8 2v4M16 2v4" /></svg>
+);
+const TrendingUpIcon = () => (
+  <svg {...iconProps}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></svg>
+);
 
 // Linha simples em SVG para a progressão de carga.
 function Sparkline({ pontos, color }: { pontos: number[]; color: string }) {
@@ -127,10 +167,13 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
     return count;
   })();
 
-  const cardCls = "rounded-2xl bg-[#0f0f0f] border border-[#1a1a1a] p-5";
+  const cardCls = "rounded-2xl bg-[#0f0f0f] border border-white/[0.08] p-6";
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#f0ece4] pb-20">
+    <div
+      className="min-h-screen text-[#f0ece4] pb-20"
+      style={{ background: `radial-gradient(60% 40% at 15% 0%, ${ACCENT}12, transparent 60%), #0a0a0a` }}
+    >
       <div className="max-w-2xl mx-auto px-5 pt-10">
 
         {/* Top: saudação + sair */}
@@ -229,11 +272,11 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
           ) : (
             <div
               className="rounded-2xl p-6 relative overflow-hidden"
-              style={{ background: `linear-gradient(135deg, ${ACCENT}22 0%, #0f0f0f 80%)`, border: `1px solid ${ACCENT}55` }}
+              style={{ background: `linear-gradient(135deg, ${ACCENT}66 0%, #3d1f00 50%, #0f0f0f 100%)`, border: `1px solid ${ACCENT}55` }}
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="text-[10px] font-mono tracking-widest" style={{ color: ACCENT }}>
+                  <div className="text-[10px] font-mono tracking-widest text-[#f0ece4]/80">
                     HOJE · {slotHoje.dow} {diaHoje.num}
                   </div>
                   <h2 className="text-2xl font-bold mt-2">{diaHoje.title}</h2>
@@ -257,7 +300,10 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
           className="grid grid-cols-2 gap-3 mb-6"
         >
           <div className={cardCls}>
-            <div className="text-[10px] font-mono text-[#666] tracking-widest mb-2">ESTA SEMANA</div>
+            <div className="flex items-center gap-3 mb-3">
+              <IconBadge><TargetIcon /></IconBadge>
+              <div className="text-[10px] font-mono text-[#666] tracking-widest">ESTA SEMANA</div>
+            </div>
             <div className="flex items-center gap-3">
               <Ring value={dashboard?.ultimos7 ?? 0} max={TREINOS_SEMANA} color={ACCENT}>
                 <span className="text-[#f0ece4]">{dashboard?.ultimos7 ?? 0}</span>
@@ -269,13 +315,19 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
           </div>
 
           <div className={cardCls}>
-            <div className="text-[10px] font-mono text-[#666] tracking-widest mb-2">TOTAL</div>
+            <div className="flex items-center gap-3 mb-3">
+              <IconBadge><AwardIcon /></IconBadge>
+              <div className="text-[10px] font-mono text-[#666] tracking-widest">TOTAL</div>
+            </div>
             <div className="text-3xl font-bold">{dashboard?.total ?? 0}</div>
             <div className="text-xs text-[#666] mt-1">treinos concluídos</div>
           </div>
 
           <div className={cardCls}>
-            <div className="text-[10px] font-mono text-[#666] tracking-widest mb-2">SEQUÊNCIA</div>
+            <div className="flex items-center gap-3 mb-3">
+              <IconBadge color="#ff5d3a"><FlameIcon /></IconBadge>
+              <div className="text-[10px] font-mono text-[#666] tracking-widest">SEQUÊNCIA</div>
+            </div>
             <div className="text-3xl font-bold">{streak}</div>
             <div className="text-xs mt-1 text-[#666]">
               {streak === 1 ? "dia seguido" : "dias seguidos"}
@@ -283,7 +335,10 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
           </div>
 
           <div className={cardCls}>
-            <div className="text-[10px] font-mono text-[#666] tracking-widest mb-2">PRÓXIMO</div>
+            <div className="flex items-center gap-3 mb-3">
+              <IconBadge color="#8a8f98"><CalendarIcon /></IconBadge>
+              <div className="text-[10px] font-mono text-[#666] tracking-widest">PRÓXIMO</div>
+            </div>
             {proximo ? (
               <>
                 <div className="text-xl font-bold">{proximo.dow} {proximo.num}</div>
@@ -304,10 +359,13 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
           className={`${cardCls} mb-6`}
         >
           <div className="flex items-center justify-between mb-3">
-            <div>
-              <div className="text-[10px] font-mono text-[#666] tracking-widest">PROGRESSÃO DE CARGA</div>
-              <div className="text-base font-bold mt-1">
-                {melhorExercicio ? melhorExercicio[0] : "Nenhum registro ainda"}
+            <div className="flex items-center gap-3">
+              <IconBadge><TrendingUpIcon /></IconBadge>
+              <div>
+                <div className="text-[10px] font-mono text-[#666] tracking-widest">PROGRESSÃO DE CARGA</div>
+                <div className="text-base font-bold mt-1">
+                  {melhorExercicio ? melhorExercicio[0] : "Nenhum registro ainda"}
+                </div>
               </div>
             </div>
             {melhorExercicio && melhorExercicio[1].length > 0 && (
