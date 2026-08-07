@@ -26,7 +26,7 @@ Front (Netlify)  ──>  Backend (Render)  ──>  PostgreSQL (Supabase/Neon)
    - `GOOGLE_CLIENT_ID` → opcional (login com Google)
    - `JWT_SECRET` → o Render gera sozinho
 3. O build roda `prisma db push` (cria as tabelas) e sobe a API.
-4. Anote a URL pública (ex.: `https://imc-treino-api.onrender.com`).
+4. Anote a URL pública (ex.: `https://sltreiners-api.onrender.com`).
 
 > Railway é alternativa: build `npm install && npm run build`, start `npm start`,
 > rode `npx prisma db push` uma vez, e defina as mesmas variáveis.
@@ -38,7 +38,7 @@ Front (Netlify)  ──>  Backend (Render)  ──>  PostgreSQL (Supabase/Neon)
 3. Em **Site settings → Environment variables**, defina:
    - `VITE_API_URL` → a URL do backend (passo 2)
    - `VITE_GOOGLE_CLIENT_ID` → opcional (mesmo id do Google)
-4. Deploy. Anote a URL do site (ex.: `https://imc-treino.netlify.app`).
+4. Deploy. Anote a URL do site (ex.: `https://sltreiners.netlify.app`).
 
 ## 4. Fechar o ciclo
 
@@ -49,7 +49,7 @@ Front (Netlify)  ──>  Backend (Render)  ──>  PostgreSQL (Supabase/Neon)
 
 ```bash
 # suba um Postgres local (Docker) — ou use a URL do Supabase no .env
-docker run --name imc-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=imc -p 5432:5432 -d postgres
+docker run --name sltreiners-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=sltreiners -p 5432:5432 -d postgres
 
 cd server
 cp .env.example .env          # ajuste DATABASE_URL e JWT_SECRET

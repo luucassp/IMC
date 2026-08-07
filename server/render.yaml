@@ -3,7 +3,7 @@
 # Defina DATABASE_URL, CORS_ORIGIN e (opcional) GOOGLE_CLIENT_ID ao subir.
 services:
   - type: web
-    name: imc-treino-api
+    name: sltreiners-api
     runtime: node
     rootDir: server
     plan: free
