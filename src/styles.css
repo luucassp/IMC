@@ -51,7 +51,13 @@ body,
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: "Georgia", "Times New Roman", serif;
+  font-family: "Poppins", system-ui, -apple-system, sans-serif;
+  line-height: 1.55;
+}
+
+/* Hover no cabeçalho do dia do ciclo (igual à referência Mayrencrosfit) */
+.ciclo-day-head:hover {
+  background: #1e2027;
 }
 
 button {

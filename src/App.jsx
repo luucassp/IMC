@@ -10,6 +10,7 @@ const Resultado = lazy(() => import("./components/Resultado.jsx"));
 const Plano = lazy(() => import("./components/Plano.jsx"));
 const TreinoLivre = lazy(() => import("./components/TreinoLivre.jsx"));
 const Ciclo = lazy(() => import("./components/Ciclo.jsx"));
+const Biblioteca = lazy(() => import("./components/Biblioteca.jsx"));
 
 // Normaliza os campos do onboarding para os tipos esperados pelo storage local.
 function perfilParaApi(p) {
@@ -100,6 +101,8 @@ export default function App() {
 
   if (view === "ciclo") {
     conteudo = <Ciclo token="" onVoltar={() => setView("home")} />;
+  } else if (view === "biblioteca") {
+    conteudo = <Biblioteca token="" onVoltar={() => setView("home")} />;
   } else if (view === "plano") {
     conteudo = <Plano plano={plano} perfil={perfilUI} recomendacao={recomendacao} token="" onVoltar={() => setView("home")} />;
   } else if (view === "evolucao") {
@@ -125,6 +128,7 @@ export default function App() {
         user={user}
         token=""
         onVerCiclo={() => setView("ciclo")}
+        onVerBiblioteca={() => setView("biblioteca")}
         onVerPerfil={() => setView("perfil")}
         onVerEvolucao={() => setView("evolucao")}
         onTreinoLivre={() => setView("treino-livre")}

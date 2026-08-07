@@ -1,39 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { CICLO, CICLO_INFO } from "../data/ciclo.js";
-import { isoLocal } from "../lib/ciclo.js";
+import { isoLocal, diaPorData, proximoDia } from "../lib/ciclo.js";
 import { api } from "../lib/api.js";
+import BlocoTreino from "./BlocoTreino.jsx";
 
 const ACC = "#ff8c1a";
-const ACC2 = "#ffb14d";
-
-function Bloco({ blk }) {
-  if (blk.nota) {
-    return (
-      <div style={{ background: "#1e2027", borderLeft: `3px solid ${ACC}`, padding: "8px 12px", borderRadius: "0 8px 8px 0", fontSize: 13, color: "#9a9da8", marginTop: 10, lineHeight: 1.55 }}>
-        {blk.nota}
-      </div>
-    );
-  }
-  return (
-    <div style={{ marginTop: 14 }}>
-      <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 1.5, color: ACC2, fontWeight: 700, marginBottom: 6 }}>
-        {blk.titulo}
-        {blk.extra && <span style={{ color: "#9a9da8", fontWeight: 500, textTransform: "none", letterSpacing: 0 }}> · {blk.extra}</span>}
-      </div>
-      {blk.texto && <p style={{ fontSize: 14, margin: 0, lineHeight: 1.55 }}>{blk.texto}</p>}
-      {blk.itens && (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-          {blk.itens.map((item, i) => (
-            <li key={i} style={{ padding: "3px 0 3px 14px", position: "relative", fontSize: 14, lineHeight: 1.55 }}>
-              <span style={{ position: "absolute", left: 0, top: 12, width: 6, height: 2, background: ACC }} />
-              {item}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
 
 function Dia({ dia, aberto, hoje, feito, podeConcluir, onToggle, onConcluir }) {
   return (
@@ -41,7 +12,8 @@ function Dia({ dia, aberto, hoje, feito, podeConcluir, onToggle, onConcluir }) {
       <button
         type="button"
         onClick={onToggle}
-        style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", cursor: "pointer", background: "none", border: "none", color: "inherit", textAlign: "left" }}
+        className="ciclo-day-head"
+        style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", cursor: "pointer", background: "none", border: "none", color: "inherit", textAlign: "left", transition: "background .15s" }}
       >
         <div style={{ fontWeight: 800, fontSize: 15, color: feito ? "#3ecf8e" : ACC, minWidth: 52, lineHeight: 1.2 }}>
           {dia.dow}<br />{dia.num}
@@ -57,7 +29,7 @@ function Dia({ dia, aberto, hoje, feito, podeConcluir, onToggle, onConcluir }) {
 
       {aberto && (
         <div style={{ padding: "0 16px 16px", borderTop: "1px solid #2a2d36" }}>
-          {dia.blocks.map((blk, i) => <Bloco key={i} blk={blk} />)}
+          {dia.blocks.map((blk, i) => <BlocoTreino key={i} blk={blk} />)}
 
           {podeConcluir && !feito && (
             <button
@@ -81,8 +53,10 @@ function Dia({ dia, aberto, hoje, feito, podeConcluir, onToggle, onConcluir }) {
 
 export default function Ciclo({ token, onVoltar }) {
   const hoje = isoLocal(new Date());
+  // Dia em destaque: hoje se for dia de treino; senão o próximo (ou o 1º do ciclo).
+  const diaFoco = diaPorData(hoje) ? hoje : (proximoDia(hoje)?.date ?? CICLO[0].dias[0].date);
   const [historico, setHistorico] = useState([]);
-  const [abertos, setAbertos] = useState(() => new Set([hoje]));
+  const [abertos, setAbertos] = useState(() => new Set([diaFoco]));
   const hojeRef = useRef(null);
 
   useEffect(() => {
@@ -144,7 +118,7 @@ export default function Ciclo({ token, onVoltar }) {
             <p style={{ color: "#9a9da8", fontSize: 13, marginBottom: 12 }}>{semana.sub}</p>
 
             {semana.dias.map((dia) => (
-              <div key={dia.date} ref={dia.date === hoje ? hojeRef : null}>
+              <div key={dia.date} ref={dia.date === diaFoco ? hojeRef : null}>
                 <Dia
                   dia={dia}
                   aberto={abertos.has(dia.date)}
