@@ -16,6 +16,7 @@ type Props = {
   user: { nome: string; avatarUrl?: string | null };
   token: string;
   onVerCiclo: () => void;
+  onVerBiblioteca: () => void;
   onVerPerfil: () => void;
   onVerEvolucao: () => void;
   onTreinoLivre: () => void;
@@ -79,7 +80,7 @@ function Sparkline({ pontos, color }: { pontos: number[]; color: string }) {
   );
 }
 
-export default function Home({ user, token, onVerCiclo, onVerPerfil, onVerEvolucao, onTreinoLivre }: Props) {
+export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPerfil, onVerEvolucao, onTreinoLivre }: Props) {
   const [historico, setHistorico] = useState<Historico[]>([]);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [menuAberto, setMenuAberto] = useState(false);
@@ -166,6 +167,7 @@ export default function Home({ user, token, onVerCiclo, onVerPerfil, onVerEvoluc
                     { icon: "👤", label: "Meu Perfil", action: () => { setMenuAberto(false); onVerPerfil(); } },
                     { icon: "📊", label: "Minha Evolução", action: () => { setMenuAberto(false); onVerEvolucao(); } },
                     { icon: "🏋️", label: "Ciclo de Treinos", action: () => { setMenuAberto(false); onVerCiclo(); } },
+                    { icon: "📚", label: "Biblioteca de WODs", action: () => { setMenuAberto(false); onVerBiblioteca(); } },
                     { icon: "🎯", label: "Treino Livre", action: () => { setMenuAberto(false); onTreinoLivre(); } },
                   ] as { icon: string; label: string; action: () => void }[]).map((item) => (
                     <button
