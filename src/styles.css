@@ -3,6 +3,7 @@
 @theme {
   --font-sans: "Geist", system-ui, -apple-system, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-display: "Barlow Condensed", "Geist", system-ui, -apple-system, sans-serif;
 }
 
 :root {

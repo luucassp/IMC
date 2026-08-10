@@ -98,6 +98,9 @@ const CalendarIcon = () => (
 const TrendingUpIcon = () => (
   <svg {...iconProps}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></svg>
 );
+const ChevronDownIcon = () => (
+  <svg {...iconProps} width={14} height={14}><polyline points="6 9 12 15 18 9" /></svg>
+);
 
 // Linha simples em SVG para a progressão de carga.
 function Sparkline({ pontos, color }: { pontos: number[]; color: string }) {
@@ -167,7 +170,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
   })();
 
   const cardCls = "rounded-2xl bg-[#0f0f0f] border border-white/[0.08] p-6";
-  const statCardCls = `${cardCls} text-left w-full hover:bg-[#141414] hover:border-white/[0.15] transition-colors cursor-pointer`;
+  const statCardCls = `${cardCls} text-left w-full hover:bg-[#141414] hover:border-white/[0.15] active:scale-[0.97] transition-all duration-150 cursor-pointer`;
 
   return (
     <div
@@ -183,7 +186,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
         >
           <div>
             <div className="text-[#888] text-sm font-mono tracking-widest uppercase">{saudacao()} 🔥</div>
-            <h1 className="text-3xl font-bold mt-1 leading-tight">{user.nome}</h1>
+            <h1 className="text-3xl font-bold font-display mt-1 leading-tight">{user.nome}</h1>
             <div className="text-[10px] font-mono tracking-widest mt-1" style={{ color: ACCENT }}>
               MAYRENCROSFIT · {CICLO_INFO.ciclo.toUpperCase()}
             </div>
@@ -191,7 +194,9 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
           <div className="relative">
             <button
               onClick={() => setMenuAberto((v) => !v)}
-              className="flex items-center gap-2 cursor-pointer"
+              aria-label="Abrir menu"
+              aria-expanded={menuAberto}
+              className="flex items-center gap-2 cursor-pointer active:scale-95 transition-transform duration-150"
             >
               {user.avatarUrl ? (
                 <img src={user.avatarUrl} alt="" className="w-10 h-10 rounded-full border border-[#222]" />
@@ -200,7 +205,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
                   {user.nome?.[0]?.toUpperCase()}
                 </div>
               )}
-              <span className="text-xs text-[#666]">▼</span>
+              <span className="text-[#666]"><ChevronDownIcon /></span>
             </button>
             {menuAberto && (
               <>
@@ -235,11 +240,16 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
             const ehHoje = i === hojeIdx;
             const feito = d.status === "feito";
             const perdido = d.status === "perdido";
+            const clicavel = !!d.dia;
             return (
-              <div
+              <button
+                type="button"
                 key={i}
+                onClick={clicavel ? () => onAbrirDia(d.date) : undefined}
+                disabled={!clicavel}
                 className={[
-                  "flex-1 min-w-[42px] py-3 rounded-2xl flex flex-col items-center transition-colors",
+                  "flex-1 min-w-[42px] py-3 rounded-2xl flex flex-col items-center transition-all duration-150",
+                  clicavel ? "cursor-pointer active:scale-95" : "cursor-default opacity-50",
                   feito ? "bg-[#ff8c1a] text-black"
                   : ehHoje ? "bg-[#141414] ring-2 ring-[#ff8c1a] text-[#ff8c1a]"
                   : perdido ? "bg-[#1a1010] text-[#ff5d7a] border border-[#ff5d7a40]"
@@ -247,8 +257,8 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
                 ].join(" ")}
               >
                 <span className="text-[10px] font-mono tracking-widest">{d.dow}</span>
-                <span className="text-lg font-bold mt-1">{d.diaDoMes}</span>
-              </div>
+                <span className="text-lg font-bold font-display mt-1">{d.diaDoMes}</span>
+              </button>
             );
           })}
         </motion.div>
@@ -277,13 +287,13 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
                   <div className="text-[10px] font-mono tracking-widest text-[#f0ece4]/80">
                     HOJE · {slotHoje.dow} {diaHoje.num}
                   </div>
-                  <h2 className="text-2xl font-bold mt-2">{diaHoje.title}</h2>
+                  <h2 className="text-2xl font-bold font-display mt-2">{diaHoje.title}</h2>
                   <div className="text-sm text-[#aaa] mt-1">{diaHoje.subtitle}</div>
                 </div>
               </div>
               <button
                 onClick={() => onAbrirDia(slotHoje.date)}
-                className="mt-5 px-5 py-3 rounded-xl font-bold text-sm tracking-wide cursor-pointer hover:opacity-90 transition-opacity"
+                className="mt-5 px-5 py-3 rounded-xl font-bold text-sm tracking-wide cursor-pointer hover:opacity-90 active:scale-95 transition-all duration-150"
                 style={{ background: ACCENT, color: "#000" }}
               >
                 Ver treino →
@@ -304,7 +314,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
             </div>
             <div className="flex items-center gap-3">
               <Ring value={dashboard?.ultimos7 ?? 0} max={TREINOS_SEMANA} color={ACCENT}>
-                <span className="text-[#f0ece4]">{dashboard?.ultimos7 ?? 0}</span>
+                <span className="text-[#f0ece4] font-display">{dashboard?.ultimos7 ?? 0}</span>
               </Ring>
               <div className="text-xs text-[#888] leading-tight">
                 de <span className="text-[#aaa] font-bold">{TREINOS_SEMANA}</span> treinos
@@ -317,7 +327,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
               <IconBadge><AwardIcon /></IconBadge>
               <div className="text-[10px] font-mono text-[#666] tracking-widest">TOTAL</div>
             </div>
-            <div className="text-3xl font-bold">{dashboard?.total ?? 0}</div>
+            <div className="text-3xl font-bold font-display">{dashboard?.total ?? 0}</div>
             <div className="text-xs text-[#666] mt-1">treinos concluídos</div>
           </button>
 
@@ -326,7 +336,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
               <IconBadge color="#ff5d3a"><FlameIcon /></IconBadge>
               <div className="text-[10px] font-mono text-[#666] tracking-widest">SEQUÊNCIA</div>
             </div>
-            <div className="text-3xl font-bold">{streak}</div>
+            <div className="text-3xl font-bold font-display">{streak}</div>
             <div className="text-xs mt-1 text-[#666]">
               {streak === 1 ? "dia seguido" : "dias seguidos"}
             </div>
@@ -339,7 +349,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
             </div>
             {proximo ? (
               <>
-                <div className="text-xl font-bold">{proximo.dow} {proximo.num}</div>
+                <div className="text-xl font-bold font-display">{proximo.dow} {proximo.num}</div>
                 <div className="text-xs text-[#666] mt-1 truncate">{proximo.title}</div>
               </>
             ) : (
@@ -368,7 +378,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
             </div>
             {melhorExercicio && melhorExercicio[1].length > 0 && (
               <div className="text-right">
-                <div className="text-2xl font-bold" style={{ color: ACCENT }}>{melhorExercicio[1].at(-1)?.valor} kg</div>
+                <div className="text-2xl font-bold font-display" style={{ color: ACCENT }}>{melhorExercicio[1].at(-1)?.valor} kg</div>
                 <div className="text-[10px] text-[#666] font-mono">última sessão</div>
               </div>
             )}
@@ -387,12 +397,12 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.25 }}
           className="grid grid-cols-2 gap-3"
         >
-          <button onClick={onVerCiclo} className={`${cardCls} text-left hover:bg-[#141414] transition-colors cursor-pointer`}>
+          <button onClick={onVerCiclo} className={`${cardCls} text-left hover:bg-[#141414] active:scale-[0.97] transition-all duration-150 cursor-pointer`}>
             <div className="text-xl mb-1">📋</div>
             <div className="font-bold text-sm">Ciclo completo</div>
             <div className="text-xs text-[#666] mt-1">{CICLO_INFO.periodo} · 4 semanas</div>
           </button>
-          <button onClick={onVerBiblioteca} className={`${cardCls} text-left hover:bg-[#141414] transition-colors cursor-pointer`}>
+          <button onClick={onVerBiblioteca} className={`${cardCls} text-left hover:bg-[#141414] active:scale-[0.97] transition-all duration-150 cursor-pointer`}>
             <div className="text-xl mb-1">📚</div>
             <div className="font-bold text-sm">Biblioteca de WODs</div>
             <div className="text-xs text-[#666] mt-1">Referências salvas</div>
