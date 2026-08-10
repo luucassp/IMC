@@ -18,7 +18,7 @@ export default function App() {
   const [view, setView] = useState("home");
   const [diaIso, setDiaIso] = useState(null);
 
-  const user = { nome: "Atleta" };
+  const user = { nome: "Sergio" };
 
   const abrirDia = (iso) => {
     setDiaIso(iso);

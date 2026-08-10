@@ -4,6 +4,7 @@ import { api } from "../lib/api.js";
 import { semanaDoCiclo, isoLocal, proximoDia } from "../lib/ciclo.js";
 import { CICLO_INFO } from "../data/ciclo.js";
 import { ACCENT } from "../lib/theme.js";
+import { PaperDesignBackground } from "./PaperDesignBackground.tsx";
 
 type Historico = { id: string; data: string; diaId: string; diaLabel: string; foco: string };
 type Dashboard = {
@@ -173,11 +174,9 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
   const statCardCls = `${cardCls} text-left w-full hover:bg-[#141414] hover:border-white/[0.15] active:scale-[0.97] transition-all duration-150 cursor-pointer`;
 
   return (
-    <div
-      className="min-h-screen text-[#f0ece4] pb-20"
-      style={{ background: `radial-gradient(60% 40% at 15% 0%, ${ACCENT}12, transparent 60%), #0a0a0a` }}
-    >
-      <div className="max-w-2xl mx-auto px-5 pt-10">
+    <div className="min-h-screen text-[#f0ece4] pb-20 relative">
+      <PaperDesignBackground intensity={0.5} />
+      <div className="max-w-2xl mx-auto px-5 pt-10 relative">
 
         {/* Top: saudação + sair */}
         <motion.div
