@@ -18,9 +18,7 @@ type Props = {
   token: string;
   onVerCiclo: () => void;
   onVerBiblioteca: () => void;
-  onVerPerfil: () => void;
   onVerEvolucao: () => void;
-  onTreinoLivre: () => void;
 };
 
 const TREINOS_SEMANA = 6; // TER–DOM · segunda = descanso
@@ -120,7 +118,7 @@ function Sparkline({ pontos, color }: { pontos: number[]; color: string }) {
   );
 }
 
-export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPerfil, onVerEvolucao, onTreinoLivre }: Props) {
+export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEvolucao }: Props) {
   const [historico, setHistorico] = useState<Historico[]>([]);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [menuAberto, setMenuAberto] = useState(false);
@@ -168,6 +166,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
   })();
 
   const cardCls = "rounded-2xl bg-[#0f0f0f] border border-white/[0.08] p-6";
+  const statCardCls = `${cardCls} text-left w-full hover:bg-[#141414] hover:border-white/[0.15] transition-colors cursor-pointer`;
 
   return (
     <div
@@ -207,11 +206,9 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
                 <div className="fixed inset-0 z-40" onClick={() => setMenuAberto(false)} />
                 <div className="absolute right-0 top-14 z-50 w-52 rounded-xl bg-[#141414] border border-[#222] shadow-2xl overflow-hidden">
                   {([
-                    { icon: "👤", label: "Meu Perfil", action: () => { setMenuAberto(false); onVerPerfil(); } },
                     { icon: "📊", label: "Minha Evolução", action: () => { setMenuAberto(false); onVerEvolucao(); } },
                     { icon: "🏋️", label: "Ciclo de Treinos", action: () => { setMenuAberto(false); onVerCiclo(); } },
                     { icon: "📚", label: "Biblioteca de WODs", action: () => { setMenuAberto(false); onVerBiblioteca(); } },
-                    { icon: "🎯", label: "Treino Livre", action: () => { setMenuAberto(false); onTreinoLivre(); } },
                   ] as { icon: string; label: string; action: () => void }[]).map((item) => (
                     <button
                       key={item.label}
@@ -299,7 +296,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.15 }}
           className="grid grid-cols-2 gap-3 mb-6"
         >
-          <div className={cardCls}>
+          <button type="button" onClick={onVerCiclo} className={statCardCls}>
             <div className="flex items-center gap-3 mb-3">
               <IconBadge><TargetIcon /></IconBadge>
               <div className="text-[10px] font-mono text-[#666] tracking-widest">ESTA SEMANA</div>
@@ -312,18 +309,18 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
                 de <span className="text-[#aaa] font-bold">{TREINOS_SEMANA}</span> treinos
               </div>
             </div>
-          </div>
+          </button>
 
-          <div className={cardCls}>
+          <button type="button" onClick={onVerEvolucao} className={statCardCls}>
             <div className="flex items-center gap-3 mb-3">
               <IconBadge><AwardIcon /></IconBadge>
               <div className="text-[10px] font-mono text-[#666] tracking-widest">TOTAL</div>
             </div>
             <div className="text-3xl font-bold">{dashboard?.total ?? 0}</div>
             <div className="text-xs text-[#666] mt-1">treinos concluídos</div>
-          </div>
+          </button>
 
-          <div className={cardCls}>
+          <button type="button" onClick={onVerEvolucao} className={statCardCls}>
             <div className="flex items-center gap-3 mb-3">
               <IconBadge color="#ff5d3a"><FlameIcon /></IconBadge>
               <div className="text-[10px] font-mono text-[#666] tracking-widest">SEQUÊNCIA</div>
@@ -332,9 +329,9 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
             <div className="text-xs mt-1 text-[#666]">
               {streak === 1 ? "dia seguido" : "dias seguidos"}
             </div>
-          </div>
+          </button>
 
-          <div className={cardCls}>
+          <button type="button" onClick={onVerCiclo} className={statCardCls}>
             <div className="flex items-center gap-3 mb-3">
               <IconBadge color="#8a8f98"><CalendarIcon /></IconBadge>
               <div className="text-[10px] font-mono text-[#666] tracking-widest">PRÓXIMO</div>
@@ -350,7 +347,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
                 <div className="text-xs text-[#666] mt-1">ciclo encerrado</div>
               </>
             )}
-          </div>
+          </button>
         </motion.div>
 
         {/* Progressão do exercício principal */}
@@ -394,10 +391,10 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerPe
             <div className="font-bold text-sm">Ciclo completo</div>
             <div className="text-xs text-[#666] mt-1">{CICLO_INFO.periodo} · 4 semanas</div>
           </button>
-          <button onClick={onTreinoLivre} className={`${cardCls} text-left hover:bg-[#141414] transition-colors cursor-pointer`}>
-            <div className="text-xl mb-1">🎯</div>
-            <div className="font-bold text-sm">Treino livre</div>
-            <div className="text-xs text-[#666] mt-1">Monte seu treino hoje</div>
+          <button onClick={onVerBiblioteca} className={`${cardCls} text-left hover:bg-[#141414] transition-colors cursor-pointer`}>
+            <div className="text-xl mb-1">📚</div>
+            <div className="font-bold text-sm">Biblioteca de WODs</div>
+            <div className="text-xs text-[#666] mt-1">Referências salvas</div>
           </button>
         </motion.div>
 
