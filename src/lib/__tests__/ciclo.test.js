@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isoLocal, todosDias, diaPorData, semanaPorData, proximoDia, semanaDoCiclo } from "../ciclo.js";
+import { isoLocal, todosDias, diaPorData, semanaPorData, proximoDia, semanaDoCiclo, mesDoCiclo, mesesDisponiveis } from "../ciclo.js";
 
 describe("isoLocal", () => {
   it("formata data como YYYY-MM-DD", () => {
@@ -111,5 +111,51 @@ describe("semanaDoCiclo", () => {
     const semana = semanaDoCiclo([], quarta);
     expect(semana[3].status).toBe("proximo");
     expect(semana[6].status).toBe("proximo");
+  });
+});
+
+describe("mesDoCiclo", () => {
+  // Sábado 15/08/2026 como "hoje".
+  const hoje = new Date(2026, 7, 15, 12, 0);
+
+  it("grade de agosto tem semanas completas (SEG..DOM) cobrindo o mês", () => {
+    const { semanas } = mesDoCiclo(2026, 7, [], hoje);
+    for (const semana of semanas) expect(semana).toHaveLength(7);
+    expect(semanas[0][0].date).toBe("2026-07-27"); // segunda antes do dia 1
+    expect(semanas.at(-1).at(-1).date).toBe("2026-09-06"); // domingo depois do dia 31
+  });
+
+  it("marca dias fora do mês em foco", () => {
+    const { semanas } = mesDoCiclo(2026, 7, [], hoje);
+    expect(semanas[0][0].foraDoMes).toBe(true); // 27/07
+    const dia11 = semanas.flat().find((c) => c.date === "2026-08-11");
+    expect(dia11.foraDoMes).toBe(false);
+  });
+
+  it("aplica o mesmo vocabulário de status de semanaDoCiclo", () => {
+    const { semanas } = mesDoCiclo(2026, 7, [], hoje);
+    const porData = Object.fromEntries(semanas.flat().map((c) => [c.date, c]));
+    expect(porData["2026-08-15"].status).toBe("hoje");
+    expect(porData["2026-08-16"].status).toBe("proximo");
+    expect(porData["2026-08-11"].status).toBe("perdido");
+    expect(porData["2026-08-11"].dia?.title).toContain("Bar Muscle-Up");
+    expect(porData["2026-08-03"].status).toBe("descanso"); // fora de qualquer ciclo
+    expect(porData["2026-08-03"].dia).toBeNull();
+  });
+
+  it("histórico marca o dia como feito", () => {
+    const { semanas } = mesDoCiclo(2026, 7, [{ diaId: "2026-08-11" }], hoje);
+    const dia11 = semanas.flat().find((c) => c.date === "2026-08-11");
+    expect(dia11.status).toBe("feito");
+  });
+});
+
+describe("mesesDisponiveis", () => {
+  it("lista julho, agosto e setembro de 2026 em ordem", () => {
+    expect(mesesDisponiveis()).toEqual([
+      { ano: 2026, mes: 6 },
+      { ano: 2026, mes: 7 },
+      { ano: 2026, mes: 8 },
+    ]);
   });
 });

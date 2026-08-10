@@ -4,6 +4,7 @@ import { WODS } from "../data/wods.js";
 import { CICLO_INFO } from "../data/ciclo.js";
 import { api } from "../lib/api.js";
 import BlocoTreino from "./BlocoTreino.jsx";
+import TopoVoltar from "./TopoVoltar.jsx";
 import { ACCENT, SUCCESS, cardStyle } from "../lib/theme.js";
 
 const ACC = ACCENT;
@@ -86,18 +87,12 @@ export default function Biblioteca({ token, onVoltar }) {
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#e8e8ea", paddingBottom: 60 }}>
+      <TopoVoltar onVoltar={onVoltar} titulo="Biblioteca de WODs" />
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "0 16px" }}>
         <motion.header
           initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-          style={{ padding: "28px 0 20px", borderBottom: `2px solid ${ACC}` }}
+          style={{ padding: "20px 0 20px", borderBottom: `2px solid ${ACC}` }}
         >
-          <button
-            type="button"
-            onClick={onVoltar}
-            style={{ background: "none", border: "none", color: "#9a9da8", cursor: "pointer", fontSize: 13, padding: 0, marginBottom: 16 }}
-          >
-            ← Voltar
-          </button>
           <h1 style={{ fontSize: "1.6rem", fontWeight: 800, letterSpacing: 0.5, margin: 0 }}>
             BIBLIOTECA DE <span style={{ color: ACC }}>WODS</span>
           </h1>

@@ -19,6 +19,7 @@ type Props = {
   onVerCiclo: () => void;
   onVerBiblioteca: () => void;
   onVerEvolucao: () => void;
+  onAbrirDia: (iso: string) => void;
 };
 
 const TREINOS_SEMANA = 6; // TER–DOM · segunda = descanso
@@ -118,7 +119,7 @@ function Sparkline({ pontos, color }: { pontos: number[]; color: string }) {
   );
 }
 
-export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEvolucao }: Props) {
+export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEvolucao, onAbrirDia }: Props) {
   const [historico, setHistorico] = useState<Historico[]>([]);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [menuAberto, setMenuAberto] = useState(false);
@@ -281,7 +282,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
                 </div>
               </div>
               <button
-                onClick={onVerCiclo}
+                onClick={() => onAbrirDia(slotHoje.date)}
                 className="mt-5 px-5 py-3 rounded-xl font-bold text-sm tracking-wide cursor-pointer hover:opacity-90 transition-opacity"
                 style={{ background: ACCENT, color: "#000" }}
               >
@@ -331,7 +332,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
             </div>
           </button>
 
-          <button type="button" onClick={onVerCiclo} className={statCardCls}>
+          <button type="button" onClick={proximo ? () => onAbrirDia(proximo.date) : onVerCiclo} className={statCardCls}>
             <div className="flex items-center gap-3 mb-3">
               <IconBadge color="#8a8f98"><CalendarIcon /></IconBadge>
               <div className="text-[10px] font-mono text-[#666] tracking-widest">PRÓXIMO</div>

@@ -183,6 +183,11 @@ export default function BoxTimer({ blk, cor, onFechar }) {
     setTela("concluido");
   }
 
+  const passoAjuste = config.modo === "countdown" ? 30 : 10;
+  function ajustarRestante(delta) {
+    setRestante((r) => Math.max(0, r + delta));
+  }
+
   const overlayStyle = {
     position: "fixed", inset: 0, zIndex: 300,
     background: `radial-gradient(ellipse 100% 80% at 50% 25%, ${cor}1a 0%, transparent 60%), #080808`,
@@ -343,9 +348,26 @@ export default function BoxTimer({ blk, cor, onFechar }) {
           {config.capMinutos && <div style={{ fontSize: 11, color: "#666", fontFamily: "monospace", marginTop: 4 }}>cap {config.capMinutos}:00</div>}
         </Anel>
       ) : (
-        <Anel fracao={config.modo === "countdown" ? restante / (config.minutos * 60) : restante / (fase === "trabalho" ? config.trabalho : config.descanso)} cor={corFase}>
-          <div style={{ fontSize: 44, fontWeight: 800, fontFamily: "monospace", color: "#f0ece4" }}>{formatarTempo(restante)}</div>
-        </Anel>
+        <>
+          <Anel fracao={config.modo === "countdown" ? restante / (config.minutos * 60) : restante / (fase === "trabalho" ? config.trabalho : config.descanso)} cor={corFase}>
+            <div style={{ fontSize: 44, fontWeight: 800, fontFamily: "monospace", color: "#f0ece4" }}>{formatarTempo(restante)}</div>
+          </Anel>
+          <div style={{ display: "flex", gap: 20, marginTop: 20 }}>
+            <button
+              onClick={() => ajustarRestante(-passoAjuste)}
+              style={{ background: "none", border: "1px solid #333", color: "#aaa", borderRadius: "50%", width: 40, height: 40, fontSize: 18, fontWeight: 700, cursor: "pointer" }}
+            >
+              −
+            </button>
+            <div style={{ fontFamily: "monospace", fontSize: 11, color: "#555", alignSelf: "center" }}>{passoAjuste}s</div>
+            <button
+              onClick={() => ajustarRestante(passoAjuste)}
+              style={{ background: "none", border: "1px solid #333", color: "#aaa", borderRadius: "50%", width: 40, height: 40, fontSize: 18, fontWeight: 700, cursor: "pointer" }}
+            >
+              +
+            </button>
+          </div>
+        </>
       )}
 
       <div style={{ display: "flex", gap: 12, marginTop: 40 }}>

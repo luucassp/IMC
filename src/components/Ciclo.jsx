@@ -1,66 +1,64 @@
-import { useEffect, useRef, useState } from "react";
+// Calendário mensal do ciclo — visão geral pra navegar entre meses e abrir
+// o treino de um dia específico (DiaTreino). Substitui a antiga lista rolável
+// de semanas, que não escala bem conforme o ciclo cresce mês a mês.
+
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { CICLO, CICLO_INFO } from "../data/ciclo.js";
-import { isoLocal, diaPorData, proximoDia } from "../lib/ciclo.js";
+import { CICLO_INFO } from "../data/ciclo.js";
+import { isoLocal, diaPorData, proximoDia, mesDoCiclo, mesesDisponiveis } from "../lib/ciclo.js";
 import { api } from "../lib/api.js";
-import BlocoTreino from "./BlocoTreino.jsx";
-import { ACCENT, SUCCESS, cardStyle } from "../lib/theme.js";
+import TopoVoltar from "./TopoVoltar.jsx";
+import { ACCENT } from "../lib/theme.js";
 import { fadeUpVariants } from "../lib/motion.js";
 
 const ACC = ACCENT;
+const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+const DOWS = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
 
-function Dia({ dia, aberto, hoje, feito, podeConcluir, onToggle, onConcluir }) {
+function CelulaDia({ cel, hojeIso, onAbrirDia }) {
+  const clicavel = !!cel.dia;
+  const feito = cel.status === "feito";
+  const ehHoje = cel.date === hojeIso;
+  const perdido = cel.status === "perdido";
+
   return (
-    <div style={{ ...cardStyle({ padding: 0, radius: 12 }), border: `1px solid ${hoje ? ACC : feito ? `${SUCCESS}55` : "#2a2d36"}`, marginBottom: 10, overflow: "hidden" }}>
-      <button
-        type="button"
-        onClick={onToggle}
-        className="ciclo-day-head"
-        style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", cursor: "pointer", background: "none", border: "none", color: "inherit", textAlign: "left", transition: "background .15s" }}
-      >
-        <div style={{ fontWeight: 800, fontSize: 15, color: feito ? SUCCESS : ACC, minWidth: 52, lineHeight: 1.2 }}>
-          {dia.dow}<br />{dia.num}
-        </div>
-        <div style={{ flex: 1 }}>
-          <strong style={{ fontSize: 15, fontWeight: 600, display: "block" }}>{dia.title}</strong>
-          <small style={{ color: "#9a9da8", fontSize: 12 }}>{dia.subtitle}</small>
-        </div>
-        {feito && <span style={{ color: SUCCESS, fontFamily: "monospace", fontSize: 11, fontWeight: 700 }}>✓ FEITO</span>}
-        {hoje && !feito && <span style={{ color: ACC, fontFamily: "monospace", fontSize: 11, fontWeight: 700 }}>HOJE</span>}
-        <span style={{ color: "#9a9da8", transform: aberto ? "rotate(90deg)" : "none", transition: "transform .2s", fontSize: 12 }}>▶</span>
-      </button>
-
-      {aberto && (
-        <div style={{ padding: "0 16px 16px", borderTop: "1px solid #2a2d36" }}>
-          {dia.blocks.map((blk, i) => <BlocoTreino key={i} blk={blk} />)}
-
-          {podeConcluir && !feito && (
-            <button
-              type="button"
-              onClick={onConcluir}
-              style={{ width: "100%", marginTop: 16, background: ACC, color: "#000", border: "none", borderRadius: 999, padding: "13px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
-            >
-              ✓ Concluir treino
-            </button>
-          )}
-          {feito && (
-            <div style={{ marginTop: 16, textAlign: "center", color: SUCCESS, fontFamily: "monospace", fontSize: 12, fontWeight: 700 }}>
-              ✓ Treino concluído
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={clicavel ? () => onAbrirDia(cel.date) : undefined}
+      disabled={!clicavel}
+      style={{
+        aspectRatio: "1",
+        borderRadius: 10,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "monospace",
+        fontSize: 13,
+        fontWeight: 700,
+        cursor: clicavel ? "pointer" : "default",
+        opacity: cel.foraDoMes ? 0.35 : 1,
+        background: feito ? ACC : "#0f0f0f",
+        color: feito ? "#000" : clicavel ? "#e8e8ea" : "#444",
+        border: ehHoje ? `2px solid ${ACC}` : perdido ? "1px solid #ff5d7a55" : "1px solid #1a1a1a",
+        transition: "background .15s, border-color .15s",
+      }}
+    >
+      {cel.diaDoMes}
+    </button>
   );
 }
 
-export default function Ciclo({ token, onVoltar }) {
+export default function Ciclo({ token, onVoltar, onAbrirDia }) {
   const hoje = isoLocal(new Date());
-  // Dia em destaque: hoje se for dia de treino; senão o próximo (ou o 1º do ciclo).
-  const diaFoco = diaPorData(hoje) ? hoje : (proximoDia(hoje)?.date ?? CICLO[0].dias[0].date);
+  const meses = mesesDisponiveis();
+
+  const diaFocoIso = diaPorData(hoje) ? hoje : (proximoDia(hoje)?.date ?? null);
+  const mesInicial = diaFocoIso
+    ? { ano: Number(diaFocoIso.slice(0, 4)), mes: Number(diaFocoIso.slice(5, 7)) - 1 }
+    : meses[0];
+
+  const [foco, setFoco] = useState(mesInicial);
   const [historico, setHistorico] = useState([]);
-  const [abertos, setAbertos] = useState(() => new Set([diaFoco]));
-  const hojeRef = useRef(null);
 
   useEffect(() => {
     let ativo = true;
@@ -68,41 +66,26 @@ export default function Ciclo({ token, onVoltar }) {
     return () => { ativo = false; };
   }, [token]);
 
-  useEffect(() => {
-    hojeRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, []);
+  const idxAtual = meses.findIndex((m) => m.ano === foco.ano && m.mes === foco.mes);
+  const temAnterior = idxAtual > 0;
+  const temProximo = idxAtual >= 0 && idxAtual < meses.length - 1;
 
-  const feitos = new Set(historico.map((h) => h.diaId));
+  function irar(delta) {
+    const novoIdx = idxAtual + delta;
+    if (novoIdx < 0 || novoIdx >= meses.length) return;
+    setFoco(meses[novoIdx]);
+  }
 
-  const toggle = (date) => {
-    setAbertos((prev) => {
-      const next = new Set(prev);
-      next.has(date) ? next.delete(date) : next.add(date);
-      return next;
-    });
-  };
-
-  const concluir = async (dia) => {
-    try {
-      const novo = await api.addHistorico(token, { diaId: dia.date, diaLabel: `${dia.dow} ${dia.num}`, foco: dia.title });
-      setHistorico((prev) => [novo, ...prev]);
-    } catch {}
-  };
+  const { semanas } = mesDoCiclo(foco.ano, foco.mes, historico);
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#e8e8ea", paddingBottom: 60 }}>
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "0 16px" }}>
+      <TopoVoltar onVoltar={onVoltar} titulo="Ciclo de treinos" />
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 16px" }}>
         <motion.header
           initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-          style={{ padding: "28px 0 20px", borderBottom: `2px solid ${ACC}` }}
+          style={{ padding: "20px 0 20px", borderBottom: `2px solid ${ACC}` }}
         >
-          <button
-            type="button"
-            onClick={onVoltar}
-            style={{ background: "none", border: "none", color: "#9a9da8", cursor: "pointer", fontSize: 13, padding: 0, marginBottom: 16 }}
-          >
-            ← Voltar
-          </button>
           <h1 style={{ fontSize: "1.6rem", fontWeight: 800, letterSpacing: 0.5, margin: 0 }}>
             MAYREN<span style={{ color: ACC }}>CROSFIT</span>
           </h1>
@@ -118,39 +101,47 @@ export default function Ciclo({ token, onVoltar }) {
           </div>
         </motion.header>
 
-        {CICLO.map((semana, si) => (
-          <motion.div
-            key={semana.id}
-            custom={si + 1}
-            variants={fadeUpVariants}
-            initial="hidden"
-            animate="show"
-            style={{ marginTop: 28 }}
-          >
-            <h2 style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: 2, color: ACC, fontWeight: 700, marginBottom: 4 }}>{semana.titulo}</h2>
-            <p style={{ color: "#9a9da8", fontSize: 13, marginBottom: 12 }}>{semana.sub}</p>
+        <motion.div custom={1} variants={fadeUpVariants} initial="hidden" animate="show" style={{ marginTop: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <button
+              type="button" onClick={() => irar(-1)} disabled={!temAnterior}
+              style={{ background: "none", border: "none", color: temAnterior ? ACC : "#333", fontSize: 22, cursor: temAnterior ? "pointer" : "default", padding: "4px 12px" }}
+            >
+              ‹
+            </button>
+            <div style={{ fontFamily: "monospace", fontSize: 14, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
+              {MESES[foco.mes]} {foco.ano}
+            </div>
+            <button
+              type="button" onClick={() => irar(1)} disabled={!temProximo}
+              style={{ background: "none", border: "none", color: temProximo ? ACC : "#333", fontSize: 22, cursor: temProximo ? "pointer" : "default", padding: "4px 12px" }}
+            >
+              ›
+            </button>
+          </div>
 
-            {semana.dias.map((dia) => (
-              <div key={dia.date} ref={dia.date === diaFoco ? hojeRef : null}>
-                <Dia
-                  dia={dia}
-                  aberto={abertos.has(dia.date)}
-                  hoje={dia.date === hoje}
-                  feito={feitos.has(dia.date)}
-                  podeConcluir={dia.date <= hoje}
-                  onToggle={() => toggle(dia.date)}
-                  onConcluir={() => concluir(dia)}
-                />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 6 }}>
+            {DOWS.map((dow) => (
+              <div key={dow} style={{ textAlign: "center", fontFamily: "monospace", fontSize: 10, color: "#555", letterSpacing: 0.5 }}>{dow}</div>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {semanas.map((semana, si) => (
+              <div key={si} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+                {semana.map((cel) => (
+                  <CelulaDia key={cel.date} cel={cel} hojeIso={hoje} onAbrirDia={onAbrirDia} />
+                ))}
               </div>
             ))}
+          </div>
 
-            {semana.descanso && (
-              <div style={{ background: "#1e2027", border: "1px dashed #2a2d36", borderRadius: 12, padding: "12px 16px", color: "#9a9da8", fontSize: 13, marginBottom: 10 }}>
-                {semana.descanso}
-              </div>
-            )}
-          </motion.div>
-        ))}
+          <div style={{ display: "flex", gap: 16, marginTop: 20, flexWrap: "wrap", fontSize: 11, color: "#9a9da8", fontFamily: "monospace" }}>
+            <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, background: ACC, marginRight: 6, verticalAlign: -1 }} />feito</span>
+            <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, border: `2px solid ${ACC}`, marginRight: 6, verticalAlign: -1 }} />hoje</span>
+            <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, border: "1px solid #ff5d7a", marginRight: 6, verticalAlign: -1 }} />perdido</span>
+          </div>
+        </motion.div>
 
         <footer style={{ marginTop: 40, textAlign: "center", color: "#9a9da8", fontSize: 12 }}>
           <p><strong style={{ color: ACC }}>{CICLO_INFO.nome}</strong> · {CICLO_INFO.coach}</p>

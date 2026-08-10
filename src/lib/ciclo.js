@@ -62,3 +62,52 @@ export function semanaDoCiclo(historico, agora = new Date()) {
     return { dow, date: iso, diaDoMes: data.getDate(), dia, status };
   });
 }
+
+// Grade de calendário (semanas SEG..DOM) para um mês, com preenchimento dos
+// dias do mês anterior/seguinte que completam a primeira/última semana.
+// Mesmo vocabulário de status de semanaDoCiclo: feito | hoje | perdido | proximo | descanso.
+export function mesDoCiclo(ano, mes, historico, agora = new Date()) {
+  const hojeIso = isoLocal(agora);
+  const feitos = new Set(historico.map((h) => h.diaId));
+
+  const primeiroDia = new Date(ano, mes, 1);
+  const ultimoDia = new Date(ano, mes + 1, 0);
+
+  const inicio = new Date(primeiroDia);
+  inicio.setDate(inicio.getDate() - indiceDia(primeiroDia));
+  const fim = new Date(ultimoDia);
+  fim.setDate(fim.getDate() + (6 - indiceDia(ultimoDia)));
+
+  const semanas = [];
+  const cursor = new Date(inicio);
+  while (cursor <= fim) {
+    const semana = [];
+    for (let i = 0; i < 7; i++) {
+      const iso = isoLocal(cursor);
+      const dia = diaPorData(iso);
+
+      let status;
+      if (!dia) status = "descanso";
+      else if (feitos.has(iso)) status = "feito";
+      else if (iso === hojeIso) status = "hoje";
+      else if (iso < hojeIso) status = "perdido";
+      else status = "proximo";
+
+      semana.push({ date: iso, diaDoMes: cursor.getDate(), foraDoMes: cursor.getMonth() !== mes, dia, status });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    semanas.push(semana);
+  }
+
+  return { ano, mes, semanas };
+}
+
+// Meses ({ano, mes}, mes 0-indexado) com pelo menos um dia programado no CICLO,
+// em ordem cronológica — usado para limitar a navegação do calendário.
+export function mesesDisponiveis() {
+  const chaves = new Set(todosDias().map((d) => d.date.slice(0, 7)));
+  return [...chaves].sort().map((chave) => {
+    const [ano, mes] = chave.split("-").map(Number);
+    return { ano, mes: mes - 1 };
+  });
+}

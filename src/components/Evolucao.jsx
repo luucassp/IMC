@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api.js";
 import MiniGrafico from "./MiniGrafico.jsx";
+import TopoVoltar from "./TopoVoltar.jsx";
 import { ACCENT } from "../lib/theme.js";
 
 const accent = ACCENT;
@@ -38,15 +39,9 @@ export default function Evolucao({ onVoltar }) {
 
   return (
     <div style={{ background: `radial-gradient(60% 40% at 15% 0%, ${accent}12, transparent 60%), #0a0a0a`, minHeight: "100vh", color: "#f0ece4" }}>
+      <TopoVoltar onVoltar={onVoltar} titulo="Evolução" />
       <div style={{ background: "#0f0f0f", borderBottom: "1px solid #1e1e1e", padding: "20px 20px 20px" }}>
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
-          <button
-            type="button"
-            onClick={onVoltar}
-            style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 13, padding: 0, marginBottom: 16 }}
-          >
-            ← Voltar
-          </button>
           <span style={{ fontFamily: "monospace", fontSize: 11, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>Evolução</span>
           <h1 style={{ fontSize: 26, fontWeight: 700, margin: "4px 0 4px", letterSpacing: -1, lineHeight: 1.1 }}>
             Consistência, cargas e histórico
