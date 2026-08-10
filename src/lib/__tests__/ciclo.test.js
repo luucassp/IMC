@@ -12,8 +12,8 @@ describe("isoLocal", () => {
 });
 
 describe("todosDias", () => {
-  it("ciclo tem 24 dias de treino (4 semanas x 6 dias)", () => {
-    expect(todosDias()).toHaveLength(24);
+  it("ciclo tem 48 dias de treino (julho + agosto, 8 semanas x 6 dias)", () => {
+    expect(todosDias()).toHaveLength(48);
   });
 
   it("datas em ordem crescente", () => {
@@ -40,8 +40,12 @@ describe("diaPorData", () => {
     expect(diaPorData("2026-07-06")).toBeNull();
   });
 
-  it("último dia do ciclo (02/08)", () => {
+  it("último dia de julho (02/08)", () => {
     expect(diaPorData("2026-08-02")?.dow).toBe("DOM");
+  });
+
+  it("último dia do ciclo de agosto (06/09)", () => {
+    expect(diaPorData("2026-09-06")?.dow).toBe("DOM");
   });
 });
 
@@ -60,8 +64,12 @@ describe("proximoDia", () => {
     expect(proximoDia("2026-07-13")?.date).toBe("2026-07-14");
   });
 
+  it("a ponte entre julho e agosto encadeia normalmente", () => {
+    expect(proximoDia("2026-08-02")?.date).toBe("2026-08-11");
+  });
+
   it("após o último dia não há próximo", () => {
-    expect(proximoDia("2026-08-02")).toBeNull();
+    expect(proximoDia("2026-09-06")).toBeNull();
   });
 });
 
