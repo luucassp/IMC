@@ -3,6 +3,13 @@
 // Cada dia tem blocos ordenados: { titulo, extra?, itens?, texto? } ou { nota }.
 // Ver ciclo.js para o CICLO_INFO ativo e a concatenação de todos os meses.
 
+export const INFO_JULHO = {
+  ciclo: "Ciclo Julho 2026",
+  periodo: "07/07 – 02/08",
+  inicio: "2026-07-07",
+  fim: "2026-08-02",
+};
+
 export const SEMANAS_JULHO = [
   {
     id: "s1",

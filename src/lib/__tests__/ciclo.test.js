@@ -12,8 +12,8 @@ describe("isoLocal", () => {
 });
 
 describe("todosDias", () => {
-  it("ciclo tem 48 dias de treino (julho + agosto, 8 semanas x 6 dias)", () => {
-    expect(todosDias()).toHaveLength(48);
+  it("ciclo tem 96 dias de treino (jul+ago+set+out, 16 semanas x 6 dias)", () => {
+    expect(todosDias()).toHaveLength(96);
   });
 
   it("datas em ordem crescente", () => {
@@ -68,8 +68,16 @@ describe("proximoDia", () => {
     expect(proximoDia("2026-08-02")?.date).toBe("2026-08-11");
   });
 
+  it("a ponte entre agosto e setembro encadeia normalmente", () => {
+    expect(proximoDia("2026-09-06")?.date).toBe("2026-09-08");
+  });
+
+  it("a ponte entre setembro e outubro encadeia normalmente", () => {
+    expect(proximoDia("2026-10-04")?.date).toBe("2026-10-06");
+  });
+
   it("após o último dia não há próximo", () => {
-    expect(proximoDia("2026-09-06")).toBeNull();
+    expect(proximoDia("2026-11-01")).toBeNull();
   });
 });
 
@@ -151,11 +159,13 @@ describe("mesDoCiclo", () => {
 });
 
 describe("mesesDisponiveis", () => {
-  it("lista julho, agosto e setembro de 2026 em ordem", () => {
+  it("lista julho a novembro de 2026 em ordem", () => {
     expect(mesesDisponiveis()).toEqual([
       { ano: 2026, mes: 6 },
       { ano: 2026, mes: 7 },
       { ano: 2026, mes: 8 },
+      { ano: 2026, mes: 9 },
+      { ano: 2026, mes: 10 },
     ]);
   });
 });

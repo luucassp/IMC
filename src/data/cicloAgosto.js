@@ -5,6 +5,13 @@
 // Sem argolas na academia: muscle-up sempre na barra fixa (bar MU); dip vira flexão fechada ou DB floor press.
 // Ver ciclo.js para o CICLO_INFO ativo e a concatenação de todos os meses.
 
+export const INFO_AGOSTO = {
+  ciclo: "Ciclo Agosto 2026",
+  periodo: "11/08 – 06/09",
+  inicio: "2026-08-11",
+  fim: "2026-09-06",
+};
+
 export const SEMANAS_AGOSTO = [
   {
     id: "ago-s1",
