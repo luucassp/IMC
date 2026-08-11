@@ -119,7 +119,10 @@ export const som = {
   tick: () => tone(660, 0.08),
   inicioTrabalho: () => tone(880, 0.22),
   inicioDescanso: () => tone(392, 0.22),
-  fim: () => { tone(1046, 0.4); tone(1046, 0.4, 0.3); },
+  // Alarme de fim — mais insistente que os outros sons, pra não passar despercebido no barulho da academia.
+  fim: () => {
+    for (let i = 0; i < 5; i++) tone(1046, 0.25, i * 0.35);
+  },
 };
 
 export function vibrar(padrao) {

@@ -65,11 +65,11 @@ export default function BoxTimer({ blk, cor, onFechar }) {
   const set = (patch) => setConfig((c) => ({ ...c, ...patch }));
 
   function iniciar() {
-    setPreCount(3);
+    setPreCount(10);
     setTela("preparando");
   }
 
-  // Contagem 3-2-1 antes de começar.
+  // Contagem 10-9-8...1 antes de começar — tempo real de dar 1 tick por segundo.
   useEffect(() => {
     if (tela !== "preparando") return;
     if (preCount <= 0) {
@@ -85,7 +85,7 @@ export default function BoxTimer({ blk, cor, onFechar }) {
       return;
     }
     som.tick();
-    const t = setTimeout(() => setPreCount((n) => n - 1), 700);
+    const t = setTimeout(() => setPreCount((n) => n - 1), 1000);
     return () => clearTimeout(t);
   }, [tela, preCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -110,7 +110,7 @@ export default function BoxTimer({ blk, cor, onFechar }) {
         setRestante((r) => {
           if (r <= 1) {
             som.fim();
-            vibrar([300, 100, 300]);
+            vibrar([300, 100, 300, 100, 300]);
             setTela("concluido");
             return 0;
           }
@@ -135,7 +135,7 @@ export default function BoxTimer({ blk, cor, onFechar }) {
           }
           if (roundAtual >= config.rounds) {
             som.fim();
-            vibrar([300, 100, 300]);
+            vibrar([300, 100, 300, 100, 300]);
             setTela("concluido");
             return 0;
           }
@@ -153,7 +153,7 @@ export default function BoxTimer({ blk, cor, onFechar }) {
           if (r <= 1) {
             if (roundAtual >= config.rounds) {
               som.fim();
-              vibrar([300, 100, 300]);
+              vibrar([300, 100, 300, 100, 300]);
               setTela("concluido");
               return 0;
             }
