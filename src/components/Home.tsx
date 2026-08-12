@@ -177,7 +177,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
   return (
     <div className="min-h-screen text-[#f0ece4] pb-20 relative">
       <BackgroundAnimado intensity={0.5} />
-      <div className="max-w-2xl mx-auto px-5 pt-10 relative">
+      <div className="max-w-2xl mx-auto px-5 relative" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 24px)" }}>
 
         {/* Top: saudação + sair */}
         <motion.div

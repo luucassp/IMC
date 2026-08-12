@@ -14,6 +14,7 @@ export default function TopoVoltar({ onVoltar, titulo, texto = "← Voltar" }) {
         alignItems: "center",
         gap: 12,
         padding: "12px 16px",
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
       }}
     >
       <button

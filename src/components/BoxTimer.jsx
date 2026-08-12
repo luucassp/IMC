@@ -198,7 +198,7 @@ export default function BoxTimer({ blk, cor, onFechar }) {
   if (tela === "config") {
     return (
       <div style={overlayStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "20px 20px 0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "20px 20px 0", paddingTop: "calc(env(safe-area-inset-top, 0px) + 20px)" }}>
           <div>
             <div style={{ fontFamily: "monospace", fontSize: 10, color: cor, letterSpacing: 2 }}>TIMER</div>
             <div style={{ fontSize: 15, fontWeight: 700, marginTop: 2 }}>{blk.titulo}</div>
@@ -328,7 +328,7 @@ export default function BoxTimer({ blk, cor, onFechar }) {
 
   return (
     <div style={{ ...overlayStyle, alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <button onClick={onFechar} style={{ position: "absolute", top: 20, right: 20, background: "none", border: "none", color: "#444", fontSize: 24, cursor: "pointer" }}>×</button>
+      <button onClick={onFechar} style={{ position: "absolute", top: "calc(env(safe-area-inset-top, 0px) + 20px)", right: 20, background: "none", border: "none", color: "#444", fontSize: 24, cursor: "pointer" }}>×</button>
 
       <div style={{ fontFamily: "monospace", fontSize: 12, color: corFase, letterSpacing: 3, marginBottom: 20, textAlign: "center" }}>{rótulo}</div>
 
