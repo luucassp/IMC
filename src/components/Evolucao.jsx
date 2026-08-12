@@ -80,7 +80,7 @@ export default function Evolucao({ onVoltar }) {
           <div style={{ fontFamily: "monospace", fontSize: 10, color: "#00D4FF", letterSpacing: 3, marginBottom: 10 }}>PROGRESSÃO DE CARGA</div>
           {exercicios.length === 0 ? (
             <div style={{ fontSize: 13, color: "#555", lineHeight: 1.6 }}>
-              Registre séries (kg × reps) pra ver a evolução de carga aqui.
+              Cadastre seus PRs na tela "Meus PRs" pra ver a evolução de carga aqui.
             </div>
           ) : (
             <>

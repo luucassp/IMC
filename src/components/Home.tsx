@@ -4,7 +4,7 @@ import { api } from "../lib/api.js";
 import { semanaDoCiclo, isoLocal, proximoDia } from "../lib/ciclo.js";
 import { CICLO_INFO } from "../data/ciclo.js";
 import { ACCENT } from "../lib/theme.js";
-import { PaperDesignBackground } from "./PaperDesignBackground.tsx";
+import { BackgroundAnimado } from "./BackgroundAnimado.tsx";
 
 type Historico = { id: string; data: string; diaId: string; diaLabel: string; foco: string };
 type Dashboard = {
@@ -20,6 +20,7 @@ type Props = {
   onVerCiclo: () => void;
   onVerBiblioteca: () => void;
   onVerEvolucao: () => void;
+  onVerPRs: () => void;
   onAbrirDia: (iso: string) => void;
 };
 
@@ -123,7 +124,7 @@ function Sparkline({ pontos, color }: { pontos: number[]; color: string }) {
   );
 }
 
-export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEvolucao, onAbrirDia }: Props) {
+export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEvolucao, onVerPRs, onAbrirDia }: Props) {
   const [historico, setHistorico] = useState<Historico[]>([]);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [menuAberto, setMenuAberto] = useState(false);
@@ -175,7 +176,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
 
   return (
     <div className="min-h-screen text-[#f0ece4] pb-20 relative">
-      <PaperDesignBackground intensity={0.5} />
+      <BackgroundAnimado intensity={0.5} />
       <div className="max-w-2xl mx-auto px-5 pt-10 relative">
 
         {/* Top: saudação + sair */}
@@ -212,6 +213,7 @@ export default function Home({ user, token, onVerCiclo, onVerBiblioteca, onVerEv
                 <div className="absolute right-0 top-14 z-50 w-52 rounded-xl bg-[#141414] border border-[#222] shadow-2xl overflow-hidden">
                   {([
                     { icon: "📊", label: "Minha Evolução", action: () => { setMenuAberto(false); onVerEvolucao(); } },
+                    { icon: "🏆", label: "Meus PRs", action: () => { setMenuAberto(false); onVerPRs(); } },
                     { icon: "🏋️", label: "Ciclo de Treinos", action: () => { setMenuAberto(false); onVerCiclo(); } },
                     { icon: "📚", label: "Biblioteca de WODs", action: () => { setMenuAberto(false); onVerBiblioteca(); } },
                   ] as { icon: string; label: string; action: () => void }[]).map((item) => (

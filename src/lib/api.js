@@ -6,7 +6,7 @@ const API_URL = import.meta.env?.VITE_API_URL || "";
 
 const K_PERFIL = "imc-treino:perfil:v1";
 const K_HISTORICO = "imc-treino:historico:v1";
-const K_REGISTROS = "imc-treino:registros:v1";
+const K_PRS = "imc-treino:prs:v1";
 
 function ler(chave, padrao) {
   try {
@@ -36,7 +36,7 @@ function inserir(chave, entrada) {
 }
 
 // Agregados que antes o servidor calculava (GET /dashboard).
-function computarDashboard(historico, registros) {
+function computarDashboard(historico, prs) {
   const total = historico.length;
   const seteDiasAtras = Date.now() - 7 * 86400000;
   const ultimos7 = historico.filter((h) => new Date(h.data).getTime() >= seteDiasAtras).length;
@@ -57,15 +57,15 @@ function computarDashboard(historico, registros) {
       valor,
     }));
 
-  // Progressão: maior carga do dia, por exercício.
+  // Progressão: PR de cada movimento ao longo do tempo (maior valor do dia).
   const progressao = {};
-  const ordenados = [...registros].sort((a, b) => new Date(a.data) - new Date(b.data));
-  for (const r of ordenados) {
-    const dia = new Date(r.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-    const serie = (progressao[r.exercicio] ??= []);
+  const ordenados = [...prs].sort((a, b) => new Date(a.data) - new Date(b.data));
+  for (const p of ordenados) {
+    const dia = new Date(p.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+    const serie = (progressao[p.movimento] ??= []);
     const ultimo = serie.at(-1);
-    if (ultimo?.label === dia) ultimo.valor = Math.max(ultimo.valor, r.carga);
-    else serie.push({ label: dia, valor: r.carga });
+    if (ultimo?.label === dia) ultimo.valor = Math.max(ultimo.valor, p.valor);
+    else serie.push({ label: dia, valor: p.valor });
   }
 
   return { total, ultimos7, frequencia, progressao };
@@ -93,27 +93,27 @@ export const api = {
     exportadoEm: new Date().toISOString(),
     perfil: ler(K_PERFIL, null),
     historico: ler(K_HISTORICO, []),
-    registros: ler(K_REGISTROS, []),
+    prs: ler(K_PRS, []),
   }),
   importarDados: async (dados) => {
     if (!dados || typeof dados !== "object" || dados.app !== "mayrencrosfit") {
       throw new Error("Arquivo inválido — exporte o backup pelo próprio app.");
     }
-    if (!Array.isArray(dados.historico) || !Array.isArray(dados.registros)) {
-      throw new Error("Backup incompleto — histórico ou registros ausentes.");
+    if (!Array.isArray(dados.historico) || !Array.isArray(dados.prs)) {
+      throw new Error("Backup incompleto — histórico ou PRs ausentes.");
     }
     if (dados.perfil) salvar(K_PERFIL, dados.perfil);
     salvar(K_HISTORICO, dados.historico);
-    salvar(K_REGISTROS, dados.registros);
+    salvar(K_PRS, dados.prs);
   },
 
   getHistorico: async () => ler(K_HISTORICO, []),
   addHistorico: async (_token, entrada) => inserir(K_HISTORICO, entrada),
 
-  getRegistros: async () => ler(K_REGISTROS, []),
-  addRegistro: async (_token, entrada) => inserir(K_REGISTROS, entrada),
+  getPrs: async () => ler(K_PRS, []),
+  addPr: async (_token, entrada) => inserir(K_PRS, entrada),
 
-  getDashboard: async () => computarDashboard(ler(K_HISTORICO, []), ler(K_REGISTROS, [])),
+  getDashboard: async () => computarDashboard(ler(K_HISTORICO, []), ler(K_PRS, [])),
 
   // IA continua precisando de um servidor (a chave não pode ficar no navegador).
   // Sem VITE_API_URL configurada, o Treino Livre mostra o aviso abaixo.

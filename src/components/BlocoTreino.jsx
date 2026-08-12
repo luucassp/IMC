@@ -1,9 +1,11 @@
 // Renderiza um bloco de treino ({ titulo, extra?, itens?, texto? } ou { nota }).
 // Compartilhado entre o Ciclo e a Biblioteca de WODs.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ACCENT, ACCENT_LIGHT, cardStyle } from "../lib/theme.js";
+import { api } from "../lib/api.js";
+import { calcularCargaTexto, prsAtuais } from "../lib/prs.js";
 import BoxTimer from "./BoxTimer.jsx";
 
 const ACC = ACCENT;
@@ -11,6 +13,13 @@ const ACC2 = ACCENT_LIGHT;
 
 export default function BlocoTreino({ blk, cor = ACCENT }) {
   const [timerAberto, setTimerAberto] = useState(false);
+  const [prs, setPrs] = useState({});
+
+  useEffect(() => {
+    let ativo = true;
+    api.getPrs().then((h) => { if (ativo) setPrs(prsAtuais(h)); }).catch(() => {});
+    return () => { ativo = false; };
+  }, []);
 
   if (blk.nota) {
     return (
@@ -36,6 +45,12 @@ export default function BlocoTreino({ blk, cor = ACCENT }) {
         </button>
       </div>
       {blk.texto && <p style={{ fontSize: 14, margin: 0, lineHeight: 1.55 }}>{blk.texto}</p>}
+      {blk.texto && (() => {
+        const carga = calcularCargaTexto(blk.texto, prs);
+        return carga ? (
+          <div style={{ fontSize: 12, color: cor, fontFamily: "monospace", marginTop: 4, fontWeight: 700 }}>{carga}</div>
+        ) : null;
+      })()}
       {blk.itens && (
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
           {blk.itens.map((item, i) => (

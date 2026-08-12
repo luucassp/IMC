@@ -5,6 +5,7 @@ const Ciclo = lazy(() => import("./components/Ciclo.jsx"));
 const Biblioteca = lazy(() => import("./components/Biblioteca.jsx"));
 const Evolucao = lazy(() => import("./components/Evolucao.jsx"));
 const DiaTreino = lazy(() => import("./components/DiaTreino.jsx"));
+const PRs = lazy(() => import("./components/PRs.jsx"));
 
 function Carregando() {
   return (
@@ -33,6 +34,8 @@ export default function App() {
     conteudo = <Biblioteca token="" onVoltar={() => setView("home")} />;
   } else if (view === "evolucao") {
     conteudo = <Evolucao onVoltar={() => setView("home")} />;
+  } else if (view === "prs") {
+    conteudo = <PRs onVoltar={() => setView("home")} />;
   } else if (view === "dia") {
     conteudo = <DiaTreino iso={diaIso} token="" onVoltar={() => setView("home")} onVerCalendario={() => setView("ciclo")} />;
   } else {
@@ -43,6 +46,7 @@ export default function App() {
         onVerCiclo={() => setView("ciclo")}
         onVerBiblioteca={() => setView("biblioteca")}
         onVerEvolucao={() => setView("evolucao")}
+        onVerPRs={() => setView("prs")}
         onAbrirDia={abrirDia}
       />
     );
