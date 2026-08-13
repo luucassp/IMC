@@ -1,9 +1,17 @@
 # MAYRENCROSFIT 🏋️
 
+[![CI](https://github.com/luucassp/mayrencrosfit/actions/workflows/ci.yml/badge.svg)](https://github.com/luucassp/mayrencrosfit/actions/workflows/ci.yml)
+![Tests](https://img.shields.io/badge/tests-67%20passing-brightgreen)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-4-38BDF8?logo=tailwindcss&logoColor=white)
+
 App pessoal de treino **CrossFit**, construído em volta de um ciclo mensal
 programado (atual: **Ciclo Julho 2026** · 07/07 – 02/08 · Estilo Cross do
-Brasil). Roda **100% no navegador** — sem backend, sem banco de dados, sem
-login. Os dados ficam no `localStorage` e podem ser exportados/importados
+Brasil). Roda **100% no navegador** — sem backend, sem banco de dados e sem
+contas de usuário. A entrada tem uma trava por senha única (hash SHA-256
+verificado no cliente), só para afastar quem topar com o link por acaso — não
+é um sistema de autenticação. Os dados ficam no `localStorage` e podem ser exportados/importados
 entre aparelhos por arquivo JSON.
 
 **No ar:** https://imc-neon.vercel.app
@@ -44,7 +52,7 @@ entre aparelhos por arquivo JSON.
 - **Sem backend**: `src/lib/api.js` implementa perfil, histórico, registros e
   dashboard sobre `localStorage`
 - **Site estático** no Vercel (SPA rewrite em `vercel.json`)
-- **Testes**: Vitest — 101 testes na lógica pura
+- **Testes**: Vitest — 67 testes na lógica pura
 - **CI**: GitHub Actions (`.github/workflows/ci.yml`) — testes + build a cada
   push/PR na `main`
 
@@ -53,7 +61,7 @@ entre aparelhos por arquivo JSON.
 ```bash
 npm install
 npm run dev      # http://localhost:5173
-npm test         # 101 testes (Vitest)
+npm test         # 67 testes (Vitest)
 npm run build    # build de produção em dist/
 ```
 
@@ -86,7 +94,7 @@ src/
     recomendacao.js   # motor de recomendação por regras (legado)
     plano.js          # montagem do plano de musculação (legado)
     tempo.js          # parsing/format de tempo de descanso
-    __tests__/        # 101 testes (Vitest)
+    __tests__/        # 67 testes (Vitest)
 
 server/               # backend NestJS legado — NÃO é necessário.
                       # Útil apenas para reativar a IA do Treino Livre
