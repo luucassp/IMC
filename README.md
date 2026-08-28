@@ -9,17 +9,15 @@
 App pessoal de treino **CrossFit**, construído em volta de um ciclo mensal
 programado (atual: **Ciclo Julho 2026** · 07/07 – 02/08 · Estilo Cross do
 Brasil). Roda **100% no navegador** — sem backend, sem banco de dados e sem
-contas de usuário. A entrada tem uma trava por senha única (hash SHA-256
-verificado no cliente), só para afastar quem topar com o link por acaso — não
-é um sistema de autenticação. Os dados ficam no `localStorage` e podem ser exportados/importados
+contas de usuário. O app abre diretamente pela URL pública. Os dados ficam no
+`localStorage` e podem ser exportados/importados
 entre aparelhos por arquivo JSON.
 
 **No ar:** https://imc-neon.vercel.app
 
 ## Como funciona
 
-1. **Primeira visita** → onboarding rápido (medidas, objetivo, nível,
-   disponibilidade, equipamentos, restrições). Preenche uma vez, fica salvo.
+1. **Acesso** → abre diretamente na Home, sem login ou senha.
 2. **Home** → treino do dia do ciclo pela **data real** (segunda = descanso
    total), strip da semana com status, sequência de dias, meta semanal
    (6 treinos: TER–DOM) e progressão de carga.

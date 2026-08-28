@@ -1,5 +1,4 @@
 import { useEffect, useState, lazy, Suspense } from "react";
-import Cadeado from "./components/Cadeado.jsx";
 
 const Home = lazy(() => import("./components/Home.tsx"));
 const Ciclo = lazy(() => import("./components/Ciclo.jsx"));
@@ -36,7 +35,6 @@ function estadoDoCaminho(pathname) {
 }
 
 export default function App() {
-  const [desbloqueado, setDesbloqueado] = useState(() => !!localStorage.getItem("mayrencrosfit:desbloqueado"));
   const [estado, setEstado] = useState(() => estadoDoCaminho(window.location.pathname));
   const { view, diaIso } = estado;
 
@@ -61,10 +59,6 @@ export default function App() {
     if (window.history.state) window.history.back();
     else navegar("home");
   };
-
-  if (!desbloqueado) {
-    return <Cadeado onDesbloquear={() => setDesbloqueado(true)} />;
-  }
 
   const user = { nome: "Sergio" };
   const abrirDia = (iso) => navegar("dia", iso);
