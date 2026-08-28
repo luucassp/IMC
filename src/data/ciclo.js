@@ -42,7 +42,7 @@ export const CICLO_INFO = {
   periodo: ativo.periodo,
   coach: "Coach Sergio · CF-L4",
   estilo: "Estilo Cross do Brasil",
-  rodape: "Clean e Snatch sempre em dias separados · Deadlift 1x/semana · Sem argolas na academia — muscle-up e dip sempre na barra fixa",
+  rodape: "Preparação competitiva RX · Sessões principais de 90–120 min · Segunda descanso e domingo recuperação · Clean e Snatch separados · Sem argolas — muscle-up sempre na barra fixa",
   tags: [
     { id: "lpo", label: "LPO", cor: "#4d9fff" },
     { id: "gin", label: "Ginástica", cor: "#ff5d7a" },
