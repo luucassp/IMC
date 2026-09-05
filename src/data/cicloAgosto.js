@@ -394,17 +394,78 @@ export const SEMANAS_AGOSTO = [
         ],
       },
       {
-        date: "2026-09-06",
-        dow: "DOM",
-        num: "06",
-        title: "Z2 + Mobilidade + Revisão",
-        subtitle: "Recuperação ativa · Fechamento da entrada",
-        blocks: [
-          { titulo: "Engine · 45 min Z2", extra: "contínuo e conversável", itens: ["15 min corrida", "15 min remo", "15 min bike ou SkiErg"] },
-          { titulo: "Mobilidade · 15 min", itens: ["Tornozelo e quadril", "Front rack e torácica", "Lat e posição overhead"] },
-          { titulo: "Revisão", itens: ["Máx HSPU strict", "Máx bar muscle-up", "Rounds do AMRAP de terça", "Consistência dos 5 rounds de engine", "Sensação de recuperação entre os dois eventos de sábado"] },
-          { nota: "Registrar os resultados. Se dor articular ou fadiga persistente passar de 48h, reduzir 20% do volume da semana seguinte." },
-        ],
+        "date": "2026-09-06",
+        "dow": "DOM",
+        "num": "06",
+        "title": "Manhã: Deadlift + WOD · Tarde: Corrida Z2",
+        "subtitle": "Duas sessões · Manhã 60–70 min · Tarde 30–35 min",
+        "blocks": [
+          {
+            "nota": "Ajuste pontual: força e WOD de sexta realizados no sábado. Manter esforço controlado e segunda-feira de descanso."
+          },
+          {
+            "titulo": "Manhã · Aquecimento · 10–12 min",
+            "itens": [
+              "4 min bike leve",
+              "Mobilidade de quadril e tornozelo + prática de hinge",
+              "Deadlift: séries progressivas leves até a carga de trabalho"
+            ]
+          },
+          {
+            "titulo": "Manhã · Força · Deadlift",
+            "texto": "Deadlift 3x5 @ 65–70% · descanso 2min30 · reorganizar a posição a cada repetição, sem buscar falha"
+          },
+          {
+            "nota": "Se lombar ou posterior estiverem muito cansados, retirar o bloco de deadlift."
+          },
+          {
+            "titulo": "Preparação do WOD · 5–8 min",
+            "itens": [
+              "Organizar SkiErg, barra e percurso de 2x20m",
+              "Ensaiar poucas repetições de cada movimento em ritmo leve"
+            ]
+          },
+          {
+            "titulo": "WOD · Repeatability · A cada 5 min x 5 rounds",
+            "extra": "25 min total",
+            "itens": [
+              "15 cal SkiErg",
+              "10 toes-to-bar",
+              "40m farmer carry — 2 DB de 22,5kg (2x20m)",
+              "12 air squats controlados",
+              "Descansar no tempo restante de cada intervalo de 5 min"
+            ]
+          },
+          {
+            "titulo": "Estratégia e score",
+            "itens": [
+              "Meta: completar cada round em 3–4 min, com pelo menos 1 min de descanso",
+              "Esforço aproximado 7/10; registrar os cinco tempos e manter consistência",
+              "SkiErg constante, sem sprint; T2B podem ser divididos em 5+5",
+              "Farmer carry com postura alta e caminhada contínua; air squats com amplitude confortável"
+            ]
+          },
+          {
+            "titulo": "Ajustes do WOD",
+            "itens": [
+              "Se o primeiro round passar de 4 min, reduzir os seguintes para 12 cal SkiErg e 8 T2B",
+              "Se pegada ou lombar estiverem fatigadas após o deadlift, trocar o farmer carry por 1 min de bike moderada"
+            ]
+          },
+          {
+            "nota": "Entre as sessões: deixar cerca de 6 horas, com refeições e hidratação."
+          },
+          {
+            "titulo": "Tarde · Corrida Z2 · 30–35 min",
+            "extra": "tempo total, incluindo os 5 min iniciais",
+            "itens": [
+              "5 min de corrida bem leve",
+              "25–30 min em ritmo de conversa",
+              "Sem tiros ou aceleração forte no final",
+              "Se as pernas estiverem pesadas ou a passada mudar, reduzir a sessão para 20–25 min"
+            ]
+          }
+        ]
       },
     ],
   },
